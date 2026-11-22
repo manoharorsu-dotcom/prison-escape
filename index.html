@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Prison Escape - Room 1</title>
+  <script src="https://telegram.org"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+    body {
+      background: #0f1115;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Top Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #181b22;
+      border-bottom: 1px solid #2d333f;
+    }
+    .room-title { font-size: 16px; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px; }
+    .hint-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #111;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+    .hint-btn:active { transform: scale(0.95); }
+
+    /* Main Room Area */
+    .room-scene {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at 50% 25%, #262b36 0%, #12141a 85%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 14px;
+      padding: 16px;
+    }
+    .hotspot {
+      background: rgba(30, 35, 45, 0.75);
+      border: 2px solid #333b48;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
+      position: relative;
+    }
+    .hotspot:active { transform: scale(0.96); border-color: #60a5fa; }
+    .hotspot-icon { font-size: 46px; margin-bottom: 8px; }
+    .hotspot-label { font-size: 14px; font-weight: 600; color: #cbd5e1; }
+    .hotspot-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+    /* Message Banner */
+    .message-bar {
+      background: #1e232d;
+      padding: 10px 16px;
+      text-align: center;
+      font-size: 13px;
+      color: #93c5fd;
+      border-top: 1px solid #2d333f;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Inventory Bar */
+    .inventory {
+      background: #14171d;
+      padding: 10px 16px 18px;
+      border-top: 1px solid #2d333f;
+    }
+    .inv-title { font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 8px; }
+    .inv-slots { display: flex; gap: 10px; }
+    .slot {
+      flex: 1;
+      height: 54px;
+      background: #1e222b;
+      border: 2px dashed #333b48;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      position: relative;
+    }
+    .slot.filled { border-style: solid; border-color: #475569; }
+    .slot.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.15); box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+    .slot-name { position: absolute; bottom: 2px; font-size: 9px; color: #94a3b8; }
+
+    /* Modal Popup */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: #1e222b;
+      border: 1px solid #3b4252;
+      border-radius: 18px;
+      padding: 22px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #f8fafc; }
+    .modal-text { font-size: 14px; color: #cbd5e1; line-height: 1.5; margin-bottom: 18px; }
+    .modal-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* Keypad Grid */
+    .keypad-display {
+      background: #0f1115;
+      border: 1px solid #334155;
+      padding: 10px;
+      font-size: 24px;
+      font-family: monospace;
+      letter-spacing: 8px;
+      color: #4ade80;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .key-btn {
+      background: #2b313e;
+      color: #f8fafc;
+      border: none;
+      padding: 14px 0;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .key-btn:active { background: #475569; }
+    .key-clear { background: #7f1d1d; }
+    .key-enter { background: #15803d; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="room-title">🔒 Cell 04 — Escape</div>
+    <button class="hint-btn" onclick="showHint()">💡 Hint (Ad)</button>
+  </div>
+
+  <!-- Interactive Room Objects -->
+  <div class="room-scene">
+    <div class="hotspot" onclick="inspectBed()">
+      <div class="hotspot-icon">🛏️</div>
+      <div class="hotspot-label">Prison Bunk</div>
+      <div class="hotspot-sub">Torn mattress</div>
+    </div>
+
+    <div class="hotspot" onclick="inspectPoster()">
+      <div class="hotspot-icon">🗓️</div>
+      <div class="hotspot-label">Wall Calendar</div>
+      <div class="hotspot-sub">Faded markings</div>
+    </div>
+
+    <div class="hotspot" onclick="inspectVent()">
+      <div class="hotspot-icon">🕳️</div>
+      <div class="hotspot-label">Air Vent</div>
+      <div class="hotspot-sub">Screwed tight</div>
+    </div>
+
+    <div class="hotspot" onclick="inspectDoor()">
+      <div class="hotspot-icon">🚪</div>
+      <div class="hotspot-label">Steel Door</div>
+      <div class="hotspot-sub">4-Digit Keypad</div>
+    </div>
+  </div>
+
+  <!-- Status Message -->
+  <div class="message-bar" id="msgBar">Tap objects around the cell to search for clues.</div>
+
+  <!-- Inventory Bar -->
+  <div class="inventory">
+    <div class="inv-title">Inventory (Tap item to equip)</div>
+    <div class="inv-slots">
+      <div class="slot" id="slot0" onclick="selectSlot(0)"></div>
+      <div class="slot" id="slot1" onclick="selectSlot(1)"></div>
+      <div class="slot" id="slot2" onclick="selectSlot(2)"></div>
+    </div>
+  </div>
+
+  <!-- Info / Clue Modal -->
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">Clue</div>
+      <div class="modal-text" id="modalText">Details here</div>
+      <button class="modal-btn" onclick="closeModal('infoModal')">Close</button>
+    </div>
+  </div>
+
+  <!-- Keypad Modal -->
+  <div class="modal-overlay" id="keypadModal">
+    <div class="modal-box">
+      <div class="modal-title">🔐 Cell Door Lock</div>
+      <div class="keypad-display" id="codeDisplay">----</div>
+      <div class="keypad-grid">
+        <button class="key-btn" onclick="pressKey('1')">1</button>
+        <button class="key-btn" onclick="pressKey('2')">2</button>
+        <button class="key-btn" onclick="pressKey('3')">3</button>
+        <button class="key-btn" onclick="pressKey('4')">4</button>
+        <button class="key-btn" onclick="pressKey('5')">5</button>
+        <button class="key-btn" onclick="pressKey('6')">6</button>
+        <button class="key-btn" onclick="pressKey('7')">7</button>
+        <button class="key-btn" onclick="pressKey('8')">8</button>
+        <button class="key-btn" onclick="pressKey('9')">9</button>
+        <button class="key-btn key-clear" onclick="clearKey()">C</button>
+        <button class="key-btn" onclick="pressKey('0')">0</button>
+        <button class="key-btn key-enter" onclick="checkCode()">OK</button>
+      </div>
+      <button class="modal-btn" style="background:#334155;" onclick="closeModal('keypadModal')">Step Back</button>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Game State
+    let inventory = [];
+    let selectedSlot = null;
+    let foundScrewdriver = false;
+    let ventOpened = false;
+    let enteredCode = "";
+    const SECRET_CODE = "1942";
+
+    function setMsg(text) {
+      document.getElementById("msgBar").innerText = text;
+    }
+
+    function openModal(title, text) {
+      document.getElementById("modalTitle").innerText = title;
+      document.getElementById("modalText").innerHTML = text;
+      document.getElementById("infoModal").classList.add("active");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    function addItem(icon, name) {
+      if (inventory.length >= 3) return;
+      inventory.push({ icon, name });
+      renderInventory();
+    }
+
+    function renderInventory() {
+      for (let i = 0; i < 3; i++) {
+        const slot = document.getElementById("slot" + i);
+        slot.className = "slot";
+        if (inventory[i]) {
+          slot.classList.add("filled");
+          if (selectedSlot === i) slot.classList.add("selected");
+          slot.innerHTML = `${inventory[i].icon}<span class="slot-name">${inventory[i].name}</span>`;
+        } else {
+          slot.innerHTML = "";
+        }
+      }
+    }
+
+    function selectSlot(index) {
+      if (!inventory[index]) return;
+      selectedSlot = (selectedSlot === index) ? null : index;
+      renderInventory();
+      if (selectedSlot !== null) {
+        setMsg(`Equipped: ${inventory[index].name}. Tap an object to use it.`);
+      } else {
+        setMsg("Item unequipped.");
+      }
+    }
+
+    // Object Interactions
+    function inspectBed() {
+      if (!foundScrewdriver) {
+        foundScrewdriver = true;
+  
