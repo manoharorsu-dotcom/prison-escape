@@ -1,320 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Prison Escape - Room 1</title>
-  <script src="https://telegram.org"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
-    body {
-      background: #0f1115;
-      color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-    /* Top Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: #181b22;
-      border-bottom: 1px solid #2d333f;
-    }
-    .room-title { font-size: 16px; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px; }
-    .hint-btn {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #111;
-      border: none;
-      padding: 7px 14px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-    }
-    .hint-btn:active { transform: scale(0.95); }
-
-    /* Main Room Area */
-    .room-scene {
-      flex: 1;
-      position: relative;
-      background: radial-gradient(circle at 50% 25%, #262b36 0%, #12141a 85%);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 14px;
-      padding: 16px;
-    }
-    .hotspot {
-      background: rgba(30, 35, 45, 0.75);
-      border: 2px solid #333b48;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.2s;
-      position: relative;
-    }
-    .hotspot:active { transform: scale(0.96); border-color: #60a5fa; }
-    .hotspot-icon { font-size: 46px; margin-bottom: 8px; }
-    .hotspot-label { font-size: 14px; font-weight: 600; color: #cbd5e1; }
-    .hotspot-sub { font-size: 11px; color: #64748b; margin-top: 3px; }
-
-    /* Message Banner */
-    .message-bar {
-      background: #1e232d;
-      padding: 10px 16px;
-      text-align: center;
-      font-size: 13px;
-      color: #93c5fd;
-      border-top: 1px solid #2d333f;
-      min-height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Inventory Bar */
-    .inventory {
-      background: #14171d;
-      padding: 10px 16px 18px;
-      border-top: 1px solid #2d333f;
-    }
-    .inv-title { font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 8px; }
-    .inv-slots { display: flex; gap: 10px; }
-    .slot {
-      flex: 1;
-      height: 54px;
-      background: #1e222b;
-      border: 2px dashed #333b48;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      position: relative;
-    }
-    .slot.filled { border-style: solid; border-color: #475569; }
-    .slot.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.15); box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
-    .slot-name { position: absolute; bottom: 2px; font-size: 9px; color: #94a3b8; }
-
-    /* Modal Popup */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 100;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: #1e222b;
-      border: 1px solid #3b4252;
-      border-radius: 18px;
-      padding: 22px;
-      width: 100%;
-      max-width: 340px;
-      text-align: center;
-    }
-    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #f8fafc; }
-    .modal-text { font-size: 14px; color: #cbd5e1; line-height: 1.5; margin-bottom: 18px; }
-    .modal-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    /* Keypad Grid */
-    .keypad-display {
-      background: #0f1115;
-      border: 1px solid #334155;
-      padding: 10px;
-      font-size: 24px;
-      font-family: monospace;
-      letter-spacing: 8px;
-      color: #4ade80;
-      border-radius: 10px;
-      margin-bottom: 14px;
-    }
-    .keypad-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .key-btn {
-      background: #2b313e;
-      color: #f8fafc;
-      border: none;
-      padding: 14px 0;
-      font-size: 18px;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .key-btn:active { background: #475569; }
-    .key-clear { background: #7f1d1d; }
-    .key-enter { background: #15803d; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Prison Escape</title>
+<script src="https://telegram.org"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+body{background:#0f1115;color:#fff;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#181b22;border-bottom:1px solid #2d333f}
+.hint{background:#f59e0b;color:#111;border:none;padding:8px 14px;border-radius:20px;font-weight:700}
+.grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.card{background:#1e232d;border:2px solid #333b48;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px}
+.card:active{border-color:#60a5fa;transform:scale(0.97)}
+.ico{font-size:44px;margin-bottom:6px}
+.msg{background:#1e232d;padding:10px;text-align:center;font-size:13px;color:#93c5fd;border-top:1px solid #2d333f}
+.inv{background:#14171d;padding:10px 14px 18px;border-top:1px solid #2d333f}
+.slots{display:flex;gap:10px;margin-top:6px}
+.slot{flex:1;height:52px;background:#1e222b;border:2px dashed #333b48;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.slot.sel{border:2px solid #f59e0b;background:#2b2518}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:99}
+.modal.open{display:flex}
+.box{background:#1e222b;border:1px solid #475569;border-radius:16px;padding:20px;width:100%;max-width:320px;text-align:center}
+.btn{background:#3b82f6;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;width:100%;margin-top:14px;font-size:15px}
+.disp{background:#0f1115;padding:10px;font-size:24px;letter-spacing:8px;color:#4ade80;border-radius:8px;margin:12px 0;font-family:monospace}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.k{background:#2b313e;color:#fff;border:none;padding:14px;font-size:18px;font-weight:700;border-radius:8px}
+</style>
 </head>
 <body>
-
-  <!-- Header -->
-  <div class="header">
-    <div class="room-title">🔒 Cell 04 — Escape</div>
-    <button class="hint-btn" onclick="showHint()">💡 Hint (Ad)</button>
-  </div>
-
-  <!-- Interactive Room Objects -->
-  <div class="room-scene">
-    <div class="hotspot" onclick="inspectBed()">
-      <div class="hotspot-icon">🛏️</div>
-      <div class="hotspot-label">Prison Bunk</div>
-      <div class="hotspot-sub">Torn mattress</div>
-    </div>
-
-    <div class="hotspot" onclick="inspectPoster()">
-      <div class="hotspot-icon">🗓️</div>
-      <div class="hotspot-label">Wall Calendar</div>
-      <div class="hotspot-sub">Faded markings</div>
-    </div>
-
-    <div class="hotspot" onclick="inspectVent()">
-      <div class="hotspot-icon">🕳️</div>
-      <div class="hotspot-label">Air Vent</div>
-      <div class="hotspot-sub">Screwed tight</div>
-    </div>
-
-    <div class="hotspot" onclick="inspectDoor()">
-      <div class="hotspot-icon">🚪</div>
-      <div class="hotspot-label">Steel Door</div>
-      <div class="hotspot-sub">4-Digit Keypad</div>
-    </div>
-  </div>
-
-  <!-- Status Message -->
-  <div class="message-bar" id="msgBar">Tap objects around the cell to search for clues.</div>
-
-  <!-- Inventory Bar -->
-  <div class="inventory">
-    <div class="inv-title">Inventory (Tap item to equip)</div>
-    <div class="inv-slots">
-      <div class="slot" id="slot0" onclick="selectSlot(0)"></div>
-      <div class="slot" id="slot1" onclick="selectSlot(1)"></div>
-      <div class="slot" id="slot2" onclick="selectSlot(2)"></div>
-    </div>
-  </div>
-
-  <!-- Info / Clue Modal -->
-  <div class="modal-overlay" id="infoModal">
-    <div class="modal-box">
-      <div class="modal-title" id="modalTitle">Clue</div>
-      <div class="modal-text" id="modalText">Details here</div>
-      <button class="modal-btn" onclick="closeModal('infoModal')">Close</button>
-    </div>
-  </div>
-
-  <!-- Keypad Modal -->
-  <div class="modal-overlay" id="keypadModal">
-    <div class="modal-box">
-      <div class="modal-title">🔐 Cell Door Lock</div>
-      <div class="keypad-display" id="codeDisplay">----</div>
-      <div class="keypad-grid">
-        <button class="key-btn" onclick="pressKey('1')">1</button>
-        <button class="key-btn" onclick="pressKey('2')">2</button>
-        <button class="key-btn" onclick="pressKey('3')">3</button>
-        <button class="key-btn" onclick="pressKey('4')">4</button>
-        <button class="key-btn" onclick="pressKey('5')">5</button>
-        <button class="key-btn" onclick="pressKey('6')">6</button>
-        <button class="key-btn" onclick="pressKey('7')">7</button>
-        <button class="key-btn" onclick="pressKey('8')">8</button>
-        <button class="key-btn" onclick="pressKey('9')">9</button>
-        <button class="key-btn key-clear" onclick="clearKey()">C</button>
-        <button class="key-btn" onclick="pressKey('0')">0</button>
-        <button class="key-btn key-enter" onclick="checkCode()">OK</button>
-      </div>
-      <button class="modal-btn" style="background:#334155;" onclick="closeModal('keypadModal')">Step Back</button>
-    </div>
-  </div>
-
-  <script>
-    // Initialize Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    // Game State
-    let inventory = [];
-    let selectedSlot = null;
-    let foundScrewdriver = false;
-    let ventOpened = false;
-    let enteredCode = "";
-    const SECRET_CODE = "1942";
-
-    function setMsg(text) {
-      document.getElementById("msgBar").innerText = text;
-    }
-
-    function openModal(title, text) {
-      document.getElementById("modalTitle").innerText = title;
-      document.getElementById("modalText").innerHTML = text;
-      document.getElementById("infoModal").classList.add("active");
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove("active");
-    }
-
-    function addItem(icon, name) {
-      if (inventory.length >= 3) return;
-      inventory.push({ icon, name });
-      renderInventory();
-    }
-
-    function renderInventory() {
-      for (let i = 0; i < 3; i++) {
-        const slot = document.getElementById("slot" + i);
-        slot.className = "slot";
-        if (inventory[i]) {
-          slot.classList.add("filled");
-          if (selectedSlot === i) slot.classList.add("selected");
-          slot.innerHTML = `${inventory[i].icon}<span class="slot-name">${inventory[i].name}</span>`;
-        } else {
-          slot.innerHTML = "";
-        }
-      }
-    }
-
-    function selectSlot(index) {
-      if (!inventory[index]) return;
-      selectedSlot = (selectedSlot === index) ? null : index;
-      renderInventory();
-      if (selectedSlot !== null) {
-        setMsg(`Equipped: ${inventory[index].name}. Tap an object to use it.`);
-      } else {
-        setMsg("Item unequipped.");
-      }
-    }
-
-    // Object Interactions
-    function inspectBed() {
-      if (!foundScrewdriver) {
-        foundScrewdriver = true;
-  
+<div class="top"><b>🔒 Cell 04 — Escape</b><button class="hint" onclick="hint()">💡 Hint (Ad)</button></div>
+<div class="grid">
+  <div class="card" onclick="bed()"><div class="ico">🛏️</div><b>Prison Bunk</b><small style="color:#94a3b8">Torn mattress</small></div>
+  <div class="card" onclick="cal()"><div class="ico">🗓️</div><b>Wall Calendar</b><small style="color:#94a3b8">Faded markings</small></div>
+  <div class="card" onclick="vent()"><div class="ico">🕳️</div><b>Air Vent</b><small style="color:#94a3b8">Screwed tight</small></div>
+  <div class="card" onclick="door()"><div class="ico">🚪</div><b>Steel Door</b><small style="color:#94a3b8">4-Digit Keypad</small></div>
+</div>
+<div class="msg" id="msg">Tap objects around the cell to search for clues.</div>
+<div class="inv"><small style="color:#64748b">INVENTORY (TAP TO EQUIP)</small>
+  <div class="slots"><div class="slot" id="s0" onclick="eq(0)"></div><div class="slot" id="s1" onclick="eq(1)"></div><div class="slot" id="s2" onclick="eq(2)"></div></div>
+</div>
+<div class="modal" id="m1"><div class="box"><h3 id="mt"></h3><p id="mb" style="margin-top:10px;color:#cbd5e1;line-height:1.5"></p><button class="btn" onclick="cl('m1')">Close</button></div></div>
+<div class="modal" id="m2"><div class="box"><h3>🔐 Door Keypad</h3><div class="disp" id="dp">----</div>
+  <div class="keys">
+    <button class="k" onclick="kp('1')">1</button><button class="k" onclick="kp('2')">2</button><button class="k" onclick="kp('3')">3</button>
+    <button class="k" onclick="kp('4')">4</button><button class="k" onclick="kp('5')">5</button><button class="k" onclick="kp('6')">6</button>
+    <button class="k" onclick="kp('7')">7</button><button class="k" onclick="kp('8')">8</button><button class="k" onclick="kp('9')">9</button>
+    <button class="k" style="background:#991b1b" onclick="kp('C')">C</button><button class="k" onclick="kp('0')">0</button><button class="k" style="background:#166534" onclick="kp('OK')">OK</button>
+  </div><button class="btn" style="background:#334155" onclick="cl('m2')">Cancel</button>
+</div></div>
+<script>
+if(window.Telegram&&window.Telegram.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
+let inv=[],sel=-1,hasTool=false,ventOpen=false,code="";
+function pop(t,b){document.getElementById("mt").innerText=t;document.getElementById("mb").innerHTML=b;document.getElementById("m1").classList.add("open");}
+function cl(id){document.getElementById(id).classList.remove("open");}
+function say(t){document.getElementById("msg").innerText=t;}
+function drawInv(){for(let i=0;i<3;i++){let el=document.getElementById("s"+i);el.innerText=inv[i]||"";el.className="slot"+(sel===i?" sel":"");}}
+function eq(i){if(!inv[i])return;sel=(sel===i)?-1:i;drawInv();say(sel===i?"Screwdriver equipped! Tap the Air Vent.":"Item unequipped.");}
+function bed(){if(!hasTool){hasTool=true;inv.push("🪛");drawInv();pop("🛏️ Under Pillow","You found a rusty <b>Screwdriver 🪛</b>!");say("Picked up Screwdriver!");}else pop("🛏️ Prison Bunk","Nothing else hidden here.");}
+function cal(){pop("🗓️ Wall Calendar","Two digits are circled in red:<br><br><b style='font-size:22px;color:#f87171'>19 _ _</b>");say("First two digits: 19...");}
+function vent(){if(ventOpen){pop("🕳️ Inside Vent","Scratched in metal:<br><br><b style='font-size:22px;color:#4ade80'>_ _ 42</b>");return;}if(sel===0){ventOpen=true;sel=-1;drawInv();pop("🕳️ Vent Opened!","You pried off the grate!<br><br>Inside you see:<br><b style='font-size:22px;color:#4ade80'>_ _ 42</b>");say("Last two digits: ...42!");}else{pop("🕳️ Air Vent","Screwed tight! Find a tool and tap it in your inventory first.");say("Need a tool to open the vent.");}}
+function door(){code="";document.getElementById("dp").innerText="----";document.getElementById("m2").classList.add("open");}
+function kp(k){if(k==="C")code="";else if(k==="OK"){if(code==="1942"){cl("m2");pop("🎉 ESCAPED!","The steel door unlocked!<br><br><b>Room 1 Complete!</b>");say("CELL 04 UNLOCKED!");}else{code="";say("❌ Wrong code! Check Calendar & Vent.");}}else if(code.length<4)code+=k;document.getElementById("dp").innerText=code.padEnd(4,"-");}
+function hint(){pop("💡 Guard's Tip","1. Tap <b>Bunk</b> for Screwdriver.<br>2. Tap <b>🪛</b> in Inventory.<br>3. Tap <b>Vent</b> to see <b>42</b>.<br>4. Enter <b>1942</b> on the <b>Door</b>.");}
+</script>
+</body>
+</html>
