@@ -1,68 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Prison Escape</title>
-<script src="https://telegram.org"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Prison Escape: 100 Rooms</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
-body{background:#0f1115;color:#fff;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#181b22;border-bottom:1px solid #2d333f}
-.hint{background:#f59e0b;color:#111;border:none;padding:8px 14px;border-radius:20px;font-weight:700}
-.grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
-.card{background:#1e232d;border:2px solid #333b48;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px}
-.card:active{border-color:#60a5fa;transform:scale(0.97)}
-.ico{font-size:44px;margin-bottom:6px}
-.msg{background:#1e232d;padding:10px;text-align:center;font-size:13px;color:#93c5fd;border-top:1px solid #2d333f}
-.inv{background:#14171d;padding:10px 14px 18px;border-top:1px solid #2d333f}
-.slots{display:flex;gap:10px;margin-top:6px}
-.slot{flex:1;height:52px;background:#1e222b;border:2px dashed #333b48;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
-.slot.sel{border:2px solid #f59e0b;background:#2b2518}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:99}
-.modal.open{display:flex}
-.box{background:#1e222b;border:1px solid #475569;border-radius:16px;padding:20px;width:100%;max-width:320px;text-align:center}
-.btn{background:#3b82f6;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;width:100%;margin-top:14px;font-size:15px}
-.disp{background:#0f1115;padding:10px;font-size:24px;letter-spacing:8px;color:#4ade80;border-radius:8px;margin:12px 0;font-family:monospace}
-.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.k{background:#2b313e;color:#fff;border:none;padding:14px;font-size:18px;font-weight:700;border-radius:8px}
+:root{--bg:#07080b;--pan:#151922;--ln:#2b313d;--tx:#dde1ea;--dm:#8a93a8;--ac:#e8a63a;--bad:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+#app{position:relative;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),6px) 10px calc(env(safe-area-inset-bottom) + 8px);background:radial-gradient(ellipse at 50% -10%,#232a3b 0,#0b0d13 55%,#050608 100%)}
+#app:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,#000d 100%);animation:fl 7s infinite}
+@keyframes fl{0%,44%,56%,100%{opacity:1}48%{opacity:.6}52%{opacity:.85}}
+header{display:flex;align-items:center;gap:8px;padding:4px 0 6px;z-index:2}
+.t{flex:1;min-width:0}
+.t b{display:block;font:700 17px "Arial Narrow",Impact,sans-serif;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t small{color:var(--dm);font-size:12px}
+.bar{height:4px;background:var(--ln);border-radius:2px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;width:1%;background:var(--ac);transition:width .5s}
+.hb{background:var(--pan);border:1px solid var(--ln);border-radius:12px;min-width:46px;height:46px;font-size:19px}
+.hint{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200;font-weight:800;font-size:13px;padding:0 13px;border:0;box-shadow:0 0 14px #e8a63a66}
+#msg{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.35;color:#b9c0d0;padding:0 6px;z-index:2}
+#scene{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:10px;padding:4px 0 10px;z-index:2}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:14px;background:linear-gradient(160deg,#252b38,#14181f);border:1px solid #3a4252;box-shadow:inset 0 1px 0 #ffffff12,0 4px 10px #0008;padding:6px;min-height:0;transition:transform .1s}
+.card:active{transform:scale(.96)}
+.card .ic{font-size:clamp(30px,8vh,50px);line-height:1}
+.card .nm{font-size:13px;font-weight:600;text-align:center}
+.card em{position:absolute;top:6px;right:8px;font-style:normal;font-size:15px}
+.card.door{border-color:var(--ac);background:linear-gradient(160deg,#3a2c14,#17120a)}
+.card.done{opacity:.5}
+.shake{animation:sh .35s}
+@keyframes sh{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+#inv{display:flex;gap:10px;z-index:2}
+.slot{flex:1;height:68px;border-radius:14px;background:#0d1016;border:2px dashed var(--ln);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#3a4252;font-size:20px}
+.slot span{font-size:28px;line-height:1}
+.slot small{font-size:10px;color:var(--dm);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+button.slot{border-style:solid;border-color:#3a4252;background:var(--pan)}
+.slot.sel{border-color:var(--ac);box-shadow:0 0 14px #e8a63a88;background:#2a2112}
+#ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+#ov.on{display:flex}
+.mod{width:100%;max-width:360px;max-height:86vh;overflow:auto;text-align:center;background:linear-gradient(#1c212c,#12151c);border:1px solid #3a4252;border-radius:18px;padding:18px;animation:pop .2s}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.mod h3,.mod h2{margin:0 0 10px;font-family:"Arial Narrow",Impact,sans-serif;letter-spacing:.05em}
+.mod p{margin:0 0 6px;line-height:1.5;font-size:15px}
+.mod ol{text-align:left;padding-left:20px;margin:0;font-size:14px;line-height:1.55}
+.mod ol li{margin-bottom:6px}
+.b{display:block;width:100%;height:50px;margin-top:10px;border-radius:12px;background:#262c39;font-weight:700;font-size:15px}
+.b.p{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200}
+#disp{font:700 34px ui-monospace,Menlo,monospace;letter-spacing:.3em;margin:6px 0 14px;color:var(--ac)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pad button{height:58px;border-radius:12px;background:#262c39;border:1px solid var(--ln);font-size:24px}
+.pad button:active{background:#3a4252}
 </style>
 </head>
 <body>
-<div class="top"><b>🔒 Cell 04 — Escape</b><button class="hint" onclick="hint()">💡 Hint (Ad)</button></div>
-<div class="grid">
-  <div class="card" onclick="bed()"><div class="ico">🛏️</div><b>Prison Bunk</b><small style="color:#94a3b8">Torn mattress</small></div>
-  <div class="card" onclick="cal()"><div class="ico">🗓️</div><b>Wall Calendar</b><small style="color:#94a3b8">Faded markings</small></div>
-  <div class="card" onclick="vent()"><div class="ico">🕳️</div><b>Air Vent</b><small style="color:#94a3b8">Screwed tight</small></div>
-  <div class="card" onclick="door()"><div class="ico">🚪</div><b>Steel Door</b><small style="color:#94a3b8">4-Digit Keypad</small></div>
+<div id="app">
+  <header>
+    <div class="t"><b id="wing"></b><small id="rn"></small><div class="bar"><i id="pb"></i></div></div>
+    <button class="hb" id="mute" aria-label="Sound">🔊</button>
+    <button class="hb hint" id="hint">💡 Hint (Ad)</button>
+  </header>
+  <div id="msg"></div>
+  <div id="scene"></div>
+  <div id="inv"></div>
+  <div id="ov"><div class="mod" id="mod"></div></div>
 </div>
-<div class="msg" id="msg">Tap objects around the cell to search for clues.</div>
-<div class="inv"><small style="color:#64748b">INVENTORY (TAP TO EQUIP)</small>
-  <div class="slots"><div class="slot" id="s0" onclick="eq(0)"></div><div class="slot" id="s1" onclick="eq(1)"></div><div class="slot" id="s2" onclick="eq(2)"></div></div>
-</div>
-<div class="modal" id="m1"><div class="box"><h3 id="mt"></h3><p id="mb" style="margin-top:10px;color:#cbd5e1;line-height:1.5"></p><button class="btn" onclick="cl('m1')">Close</button></div></div>
-<div class="modal" id="m2"><div class="box"><h3>🔐 Door Keypad</h3><div class="disp" id="dp">----</div>
-  <div class="keys">
-    <button class="k" onclick="kp('1')">1</button><button class="k" onclick="kp('2')">2</button><button class="k" onclick="kp('3')">3</button>
-    <button class="k" onclick="kp('4')">4</button><button class="k" onclick="kp('5')">5</button><button class="k" onclick="kp('6')">6</button>
-    <button class="k" onclick="kp('7')">7</button><button class="k" onclick="kp('8')">8</button><button class="k" onclick="kp('9')">9</button>
-    <button class="k" style="background:#991b1b" onclick="kp('C')">C</button><button class="k" onclick="kp('0')">0</button><button class="k" style="background:#166534" onclick="kp('OK')">OK</button>
-  </div><button class="btn" style="background:#334155" onclick="cl('m2')">Cancel</button>
-</div></div>
 <script>
-if(window.Telegram&&window.Telegram.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();}
-let inv=[],sel=-1,hasTool=false,ventOpen=false,code="";
-function pop(t,b){document.getElementById("mt").innerText=t;document.getElementById("mb").innerHTML=b;document.getElementById("m1").classList.add("open");}
-function cl(id){document.getElementById(id).classList.remove("open");}
-function say(t){document.getElementById("msg").innerText=t;}
-function drawInv(){for(let i=0;i<3;i++){let el=document.getElementById("s"+i);el.innerText=inv[i]||"";el.className="slot"+(sel===i?" sel":"");}}
-function eq(i){if(!inv[i])return;sel=(sel===i)?-1:i;drawInv();say(sel===i?"Screwdriver equipped! Tap the Air Vent.":"Item unequipped.");}
-function bed(){if(!hasTool){hasTool=true;inv.push("🪛");drawInv();pop("🛏️ Under Pillow","You found a rusty <b>Screwdriver 🪛</b>!");say("Picked up Screwdriver!");}else pop("🛏️ Prison Bunk","Nothing else hidden here.");}
-function cal(){pop("🗓️ Wall Calendar","Two digits are circled in red:<br><br><b style='font-size:22px;color:#f87171'>19 _ _</b>");say("First two digits: 19...");}
-function vent(){if(ventOpen){pop("🕳️ Inside Vent","Scratched in metal:<br><br><b style='font-size:22px;color:#4ade80'>_ _ 42</b>");return;}if(sel===0){ventOpen=true;sel=-1;drawInv();pop("🕳️ Vent Opened!","You pried off the grate!<br><br>Inside you see:<br><b style='font-size:22px;color:#4ade80'>_ _ 42</b>");say("Last two digits: ...42!");}else{pop("🕳️ Air Vent","Screwed tight! Find a tool and tap it in your inventory first.");say("Need a tool to open the vent.");}}
-function door(){code="";document.getElementById("dp").innerText="----";document.getElementById("m2").classList.add("open");}
-function kp(k){if(k==="C")code="";else if(k==="OK"){if(code==="1942"){cl("m2");pop("🎉 ESCAPED!","The steel door unlocked!<br><br><b>Room 1 Complete!</b>");say("CELL 04 UNLOCKED!");}else{code="";say("❌ Wrong code! Check Calendar & Vent.");}}else if(code.length<4)code+=k;document.getElementById("dp").innerText=code.padEnd(4,"-");}
-function hint(){pop("💡 Guard's Tip","1. Tap <b>Bunk</b> for Screwdriver.<br>2. Tap <b>🪛</b> in Inventory.<br>3. Tap <b>Vent</b> to see <b>42</b>.<br>4. Enter <b>1942</b> on the <b>Door</b>.");}
-</script>
-</body>
-</html>
+"use strict";
+/* ---------- Telegram ---------- */
+const tg = window.Telegram && window.Telegram.WebApp;
+try { tg.ready(); tg.expand(); tg.setHeaderColor("#07080b"); tg.setBackgroundColor("#07080b"); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (e) {}
+const APP_URL = "https://t.me/YOUR_BOT_USERNAME/YOUR_APP_SHORT_NAME"; // <-- replace with your Mini App link
+const hap = t => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
+const $ = s => document.querySelector(s);
+
+/* ---------- Save ---------- */
+function fresh() { return { room: 1, mute: 0, salt: Math.floor(Math.random() * 1e6) }; }
+function load() { try { const s = JSON.parse(localStorage.getItem("pe100")); if (s && s.room) return s; } catch (e) {} return fresh(); }
+function save() { try { localStorage.setItem("pe100", JSON.stringify(S)); } catch (e) {} }
+let S = load(), cur, inv = [], sel = -1;
+
+/* ---------- Sound (Web Audio, no files) ---------- */
+let ac;
+function A() {
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (ac && ac.state === "suspended") ac.resume();
+  return ac;
+}
+function tone(f, d, ty = "sine", v = .15, t0 = 0, f2) {
+  const c = A(); if (!c || S.mute) return;
+  const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+  o.type = ty; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .03);
+}
+const sfx = {
+  click: () => tone(420, .06, "square", .05),
+  pick: () => [880, 1175, 1568].forEach((f, i) => tone(f, .28, "sine", .14, i * .08)),
+  err: () => { tone(120, .35, "sawtooth", .16, 0, 60); hap("error"); },
+  rattle: () => { for (let i = 0; i < 6; i++) tone(160 + Math.random() * 120, .05, "square", .09, i * .055); hap("error"); },
+  beep: d => tone(520 + d * 48, .09, "square", .06),
+  win: () => { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i === 6 ? .7 : .26, "triangle", .18, i * .13)); hap("success"); }
+};
+
+/* ---------- Content ---------- */
+// [name, icon, [doorIcon, doorName], [toolIcon, toolName], "search objects"]
+const WINGS = [
+ ["Cell Block","🔒",["🚪","Cell Door"],["🥄","Sharpened Spoon"],"🛏️ Bunk,🚽 Toilet,📚 Bookshelf,🧱 Loose Brick,🪞 Steel Mirror,🧦 Sock Pile,🪑 Stool,💡 Bare Bulb"],
+ ["Guard Hall","💂",["🚧","Steel Gate"],["🪪","Guard Keycard"],"🪑 Guard Desk,☕ Coffee Mug,📻 Radio,🗄️ Locker,🖥️ Monitor,🧥 Coat Rack,📋 Roster,🔦 Flashlight"],
+ ["Warden's Office","🏛️",["🚪","Private Exit"],["🗝️","Brass Key"],"🖼️ Portrait,🗃️ File Cabinet,🖋️ Desk,🍾 Liquor Cabinet,🕰️ Grandfather Clock,🪴 Plant,📞 Telephone,🧳 Briefcase"],
+ ["Boiler Room","🔥",["🕳️","Iron Hatch"],["🔧","Pipe Wrench"],"🔥 Furnace,🛢️ Oil Drum,🌡️ Gauge,⚙️ Gears,🧰 Toolbox,🪜 Ladder,💨 Steam Pipe,🕸️ Cobwebs"],
+ ["Medical Bay","⚕️",["🚪","Quarantine Door"],["🔪","Scalpel"],"🛏️ Cot,💊 Pill Cabinet,🩻 X-Ray,🧴 Sink,🧫 Lab Tray,🩺 Stethoscope,🪟 Curtain,🗄️ Records"],
+ ["Security Vault","🏦",["🚪","Vault Door"],["🔑","Vault Key"],"💰 Cash Crate,📹 Camera,🧲 Magnet Panel,📦 Deposit Boxes,🧮 Ledger,🕯️ Candle,📟 Terminal,🗝️ Key Rack"],
+ ["Laundry Chute","🧺",["🕳️","Chute Hatch"],["🪝","Hook Pole"],"🧺 Laundry Cart,🧼 Soap Bin,👕 Uniform Pile,🌀 Dryer,🧵 Sewing Kit,🪣 Bucket,🚿 Wash Basin,🧹 Mop"],
+ ["Armory","🛡️",["🚪","Blast Door"],["✂️","Bolt Cutters"],"🛡️ Riot Shield,🪖 Helmet,📦 Supply Crate,🥋 Body Armor,🔦 Lantern,📜 Inventory Log,🧯 Extinguisher,🗄️ Gear Rack"],
+ ["Watchtower","🔭",["🚪","Tower Hatch"],["🪢","Climbing Rope"],"🔭 Telescope,💡 Searchlight,🪟 Window,☎️ Field Phone,🧭 Compass,🪜 Stairs,🕊️ Pigeon Nest,📡 Antenna"],
+ ["Main Gate","🚨",["⛩️","Main Gate"],["🗝️","Master Key"],"🚧 Barrier,🚨 Alarm Panel,🛂 Checkpoint,🚗 Prison Van,📣 Loudspeaker,🧱 Outer Wall,🪧 Sign,⛓️ Chains"]
+];
+const KINDS = ["tool", "math", "symbol", "safe"];
+const NOTES = ['Scratched into the wall: "#"', 'A guard\'s sticky note: "#"', 'Smudged marker on the pipe: "#"', 'Whispered by a cellmate: "#"', 'Carved under the surface: "#"'];
+const DECOY = ["Just dust and rust.", "Nothing useful here.", "Cold, damp and creepy.", "Distant footsteps echo...", "Tally marks. Not helpful.", "An empty bottle. Nothing inside.", "Someone was here before you."];
+const SYMS = ["▲", "●", "■", "◆", "★", "☾", "✚", "☀"];
+
+/* ---------- Procedural generator ---------- */
+function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuf(a, r) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const pick = (a, r) => a[Math.floor(r() * a.length)];
+const code4 = r => [0, 0, 0, 0].map(() => Math.floor(r() * 10)).join("");
+
+function equation(r, lv) { // returns [question, two-digit answer]
+  const ri = k => Math.floor(r() * k), t = ri(lv < .25 ? 2 : lv < .55 ? 3 : 5);
+  if (t === 0) { const a = 10 + ri(45), b = 10 + ri(45); return [`${a} + ${b} = ?`, a + b]; }
+  if (t === 1) { const a = 50 + ri(49), b = 1 + ri(a - 10); return [`${a} − ${b} = ?`, a - b]; }
+  if (t === 2) { const a = 2 + ri(8), lo = Math.ceil(10 / a), b = lo + ri(Math.floor(99 / a) - lo + 1); return [`${a} × ${b} = ?`, a * b]; }
+  if (t === 3) { const s = 1 + ri(5), d = 3 + ri(4); return [`${s}, ${s + d}, ${s + 2 * d}, ${s + 3 * d}, ?`, s + 4 * d]; }
+  const s = 2 + ri(4); return [`${s}, ${s * 2}, ${s * 4}, ${s * 8}, ?`, s * 16];
+}
+function fragment(v, lv, ri) {
+  if (lv < .4) return v;
+  if (lv < .7) { const a = ri(v + 1); return `${a} + ${v - a}`; }
+  const k = 1 + ri(5); return `${v + k} − ${k}`;
+}
+
+function genRoom(n) {
+  const r = rng(n * 7919 + S.salt), ri = k => Math.floor(r() * k);
+  const w = Math.floor((n - 1) / 10), W = WINGS[w], lv = n / 100;
+  const pool = shuf(W[4].split(","), r).map(s => { const i = s.indexOf(" "); return { icon: s.slice(0, i), name: s.slice(i + 1) }; });
+  const O = [], st = [], L = o => `${o.icon} ${o.name}`;
+  const add = p => { const o = Object.assign({}, pool.pop(), p); O.push(o); return o; };
+  const door = { icon: W[2][0], name: W[2][1], door: 1 }, tool = { icon: W[3][0], name: W[3][1] };
+  const kind = KINDS[(n + ri(2)) % 4]; let intro;
+
+  if (kind === "tool") {
+    intro = "The exit is sealed tight. Something in here can force it open.";
+    door.lock = { item: tool.name };
+    if (w >= 2 && r() < .6) {
+      const c = code4(r), box = add({ give: tool, lock: { code: c } }), note = add({ clue: pick(NOTES, r).replace("#", c) });
+      st.push(`Read the ${L(note)}: the code is ${c}.`, `Enter ${c} on the ${L(box)} to get the ${L(tool)}.`);
+    } else {
+      const box = add({ give: tool });
+      st.push(`Search the ${L(box)}: the ${L(tool)} is hidden there.`);
+    }
+    st.push(`Equip the ${L(tool)} from your inventory, then tap the ${L(door)}.`);
+  } else if (kind === "math") {
+    intro = "A guard scribbled the exit code as riddles. Solve both halves.";
+    const a = equation(r, lv), b = equation(r, lv), c = "" + a[1] + b[1];
+    door.lock = { code: c };
+    const p1 = add({ clue: `Torn note, part 1 of 2. These are the first two digits:<br><b>${a[0]}</b>` });
+    const p2 = add({ clue: `Torn note, part 2 of 2. These are the last two digits:<br><b>${b[0]}</b>` });
+    st.push(`${L(p1)} solves to ${a[1]}.`, `${L(p2)} solves to ${b[1]}.`, `Enter ${c} on the ${L(door)}.`);
+  } else if (kind === "symbol") {
+    intro = "Strange symbols are carved around the room. Decode them.";
+    const syms = shuf(SYMS.slice(), r), digs = shuf([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], r), n4 = lv > .4 ? 5 : 4;
+    const map = syms.slice(0, n4).map((s, i) => [s, digs[i]]);
+    const seq = shuf(map.slice(0, 4), r), c = seq.map(m => m[1]).join("");
+    door.lock = { code: c };
+    const lg = add({ clue: `Chart on the surface:<br><b>${shuf(map.slice(), r).map(m => m[0] + " = " + m[1]).join("&nbsp;&nbsp;")}</b>` });
+    const sq = add({ clue: `Symbols carved in a row:<br><b style="font-size:26px;letter-spacing:.2em">${seq.map(m => m[0]).join(" ")}</b>` });
+    st.push(`${L(lg)} shows what each symbol means.`, `${L(sq)} shows the order: ${seq.map(m => m[0]).join(" ")}.`, `That translates to ${c}. Enter it on the ${L(door)}.`);
+  } else {
+    intro = "A wall safe holds the key. Its combination is scattered around the room.";
+    const d = [0, 0, 0, 0].map(() => ri(10)), c = d.join("");
+    const safe = add({ icon: "🔐", name: "Wall Safe", give: tool, lock: { code: c } });
+    const f = d.map((v, i) => add({ clue: `Scrap of paper:<br>Digit ${i + 1} of 4 is <b>${fragment(v, lv, ri)}</b>` }));
+    door.lock = { item: tool.name };
+    f.forEach((o, i) => st.push(`${L(o)} gives digit ${i + 1}: ${d[i]}.`));
+    st.push(`Enter ${c} on the ${L(safe)} to get the ${L(tool)}.`, `Equip the ${L(tool)}, then tap the ${L(door)}.`);
+  }
+  while (O.length < 5) add({ txt: pick(DECOY, r) });
+  O.push(door); shuf(O, r);
+  return { O, st, intro, w, kind };
+}
+
+/* ---------- UI helpers ---------- */
+function msg(t) { $("#msg").textContent = t; }
+function modal(html, btns, sticky) {
+  $("#mod").innerHTML = html + (btns || []).map((b, i) => `<button class="b${b[2] ? " p" : ""}" data-b="${i}">${b[0]}</button>`).join("");
+  $("#ov").classList.add("on"); $("#ov").dataset.sticky = sticky ? 1 : "";
+  $("#mod").onclick = e => { const b = e.target.closest("[data-b]"); if (b) { const f = btns[+b.dataset.b][1]; closeModal(); if (f) f(); } };
+}
+function closeModal() { $("#ov").classList.remove("on"); $("#mod").onclick = null; }
+$("#ov").addEventListener("click", e => { if (e.target.id === "ov" && !$("#ov").dataset.sticky) { sfx.click(); closeModal(); } });
+
+function render() {
+  const W = WINGS[cur.w];
+  $("#wing").textContent = `${W[1]} ${W[0]}`;
+  $("#rn").textContent = `Room ${S.room} of 100  ·  Wing ${cur.w + 1}/10`;
+  $("#pb").style.width = S.room + "%";
+  $("#mute").textContent = S.mute ? "🔇" : "🔊";
+  $("#scene").innerHTML = cur.O.map((o, i) => {
+    const locked = o.lock && !o.open;
+    return `<button class="card${o.door ? " door" : ""}${o.taken || (o.open && !o.door) ? " done" : ""}" data-i="${i}"><span class="ic">${o.icon}</span><span class="nm">${o.name}</span>${locked ? "<em>🔒</em>" : ""}</button>`;
+  }).join("");
+  $("#inv").innerHTML = [0, 1, 2].map(i => inv[i]
+    ? `<button class="slot${i === sel ? " sel" : ""}" data-i="${i}"><span>${inv[i].icon}</span><small>${inv[i].name}</small></button>`
+    : `<div class="slot">·</div>`).join("");
+}
+function shake(i) { const c = $(`#scene [data-i="${i}"]`); if (c) { c.classList.add("shake"); c.addEventListener("animationend", () => c.classList.remove("shake"), { once: true }); } }
+
+/* ---------- Game flow ---------- */
+function start(n) {
+  S.room = n; save(); cur = genRoom(n); inv = []; sel = -1;
+  render(); msg(cur.intro);
+}
+$("#scene").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) tap(+c.dataset.i); });
+$("#inv").addEventListener("click", e => {
+  const s = e.target.closest("button.slot"); if (!s) return;
+  const i = +s.dataset.i; sel = sel === i ? -1 : i; sfx.click();
+  msg(sel >= 0 ? `${inv[sel].name} equipped. Tap a locked object to use it.` : "Item unequipped."); render();
+});
+
+function tap(i) {
+  const o = cur.O[i]; A();
+  if (o.lock && !o.open) {
+    if (o.lock.item) {
+      const it = inv[sel];
+      if (!it) { sfx.rattle(); shake(i); return msg(`Locked. Tap an item in your inventory to equip it, then tap ${o.name}.`); }
+      if (it.name !== o.lock.item) { sfx.rattle(); shake(i); return msg(`The ${it.name} doesn't work on ${o.name}.`); }
+      inv.splice(sel, 1); sel = -1; sfx.pick(); return unlock(o);
+    }
+    sfx.click(); return keypad(o, i);
+  }
+  sfx.click(); reveal(o);
+}
+function unlock(o) {
+  o.open = 1;
+  if (o.door) return win();
+  msg(`${o.name} unlocked!`); reveal(o);
+}
+function reveal(o) {
+  if (o.clue) { modal(`<h3>${o.icon} ${o.name}</h3><p>${o.clue}</p>`, [["Close"]]); msg("Remember this clue. Tap it again anytime."); }
+  else if (o.give && !o.taken) {
+    if (inv.length >= 3) { sfx.err(); return msg("Inventory full."); }
+    o.taken = 1; inv.push(o.give); sfx.pick(); msg(`Found ${o.give.icon} ${o.give.name}! Tap it below to equip.`);
+  } else if (o.give) msg("It's empty now.");
+  else msg(o.txt || "Nothing here.");
+  render();
+}
+function keypad(o, i) {
+  let c = "";
+  const show = () => { $("#disp").textContent = [0, 1, 2, 3].map(k => c[k] || "_").join(" "); };
+  modal(`<h3>${o.icon} ${o.name}</h3><div id="disp">_ _ _ _</div><div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, "⌫", 0, "✕"].map(k => `<button data-k="${k}">${k}</button>`).join("")}</div>`, []);
+  $("#mod").onclick = e => {
+    const b = e.target.closest("[data-k]"); if (!b) return;
+    const k = b.dataset.k;
+    if (k === "✕") { sfx.click(); return closeModal(); }
+    if (k === "⌫") { sfx.click(); c = c.slice(0, -1); return show(); }
+    if (c.length >= 4) return;
+    c += k; sfx.beep(+k); show();
+    if (c.length === 4) setTimeout(() => {
+      if (c === o.lock.code) { closeModal(); sfx.pick(); unlock(o); }
+      else { sfx.err(); c = ""; show(); const d = $("#disp"); if (d) { d.classList.add("shake"); d.addEventListener("animationend", () => d.classList.remove("shake"), { once: true }); } msg("Wrong code. The lock stays shut."); }
+    }, 180);
+  };
+}
+
+function win() {
+  const n = S.room, last = n >= 100;
+  sfx.win();
+  if (last) { S.done = 1; } else { S.room = n + 1; }
+  save();
+  modal(last
+    ? `<h2>🏆 You escaped!</h2><p>All 100 rooms cleared. Freedom is yours.</p>`
+    : `<h2>🔓 Room ${n} cleared!</h2><p>You slip through the ${cur.O.find(o => o.door).name} and move on.</p>`,
+    [["📢 Challenge Friends", () => shareChallenge(n, last), 0],
+     last ? ["🔁 Play Again", () => { S = fresh(); start(1); }, 1] : ["Next Room ▶", () => start(S.room), 1]], true);
+  hap("success");
+}
+function shareChallenge(n, last) {
+  const text = last ? "🏆 I escaped all 100 rooms of Prison Escape! Think you can do it?" : `🔓 I just cleared Room ${n} of Prison Escape: 100 Rooms! Can you beat me?`;
+  const u = "https://t.me/share/url?url=" + encodeURIComponent(APP_URL) + "&text=" + encodeURIComponent(text);
+  try { if (tg && tg.initData) return tg.openTelegramLink(u); } catch (e) {}
+  window.open(u, "_blank");
+}
+
+/* ---------- Monetization: rewarded ad hint ---------- */
+async function showRewardedAdHint() {
+  sfx.click();
+  try {
+    /* ====== PASTE YOUR REWARDED-AD SDK TRIGGER HERE ======
+       AdsGram:  const AdController = window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" });
+                 await AdCon
