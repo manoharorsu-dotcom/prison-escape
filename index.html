@@ -2,404 +2,1602 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Prison Escape: 100 Rooms</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>Save Elena: Prison Break</title>
 <style>
-:root{--bg:#07080b;--pan:#151922;--ln:#2b313d;--tx:#dde1ea;--dm:#8a93a8;--ac:#e8a63a;--bad:#ef4444}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;touch-action:manipulation}
-button{font:inherit;color:inherit;border:0;cursor:pointer}
-#app{position:relative;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),6px) 10px calc(env(safe-area-inset-bottom) + 8px);background:radial-gradient(ellipse at 50% -10%,#232a3b 0,#0b0d13 55%,#050608 100%)}
-#app:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,#000d 100%);animation:fl 7s infinite}
-@keyframes fl{0%,44%,56%,100%{opacity:1}48%{opacity:.6}52%{opacity:.85}}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 0 6px;z-index:2}
-.t{flex:1 0 100%;min-width:0}
-.t b{display:inline;margin-right:8px;font:700 15px "Arial Narrow",Impact,sans-serif;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.t small{color:var(--dm);font-size:12px}
-.bar{height:4px;background:var(--ln);border-radius:2px;margin-top:5px;overflow:hidden}
-.bar i{display:block;height:100%;width:1%;background:var(--ac);transition:width .5s}
-.hb{background:var(--pan);border:1px solid var(--ln);border-radius:12px;min-width:42px;height:42px;font-size:19px}
-.hint{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200;font-weight:800;font-size:12px;padding:0 4px;flex:1;border:0;box-shadow:0 0 14px #e8a63a66}
-.skip{flex:1;font-size:12px;font-weight:700;padding:0 4px;border-color:var(--ac);color:var(--ac)}
-.lvb{flex:1;font-size:12px;font-weight:700;padding:0 4px}
-#msg{min-height:34px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.35;color:#b9c0d0;padding:0 6px;z-index:2}
-#scene{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:10px;padding:4px 0 10px;z-index:2}
-.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:14px;background:linear-gradient(160deg,#252b38,#14181f);border:1px solid #3a4252;box-shadow:inset 0 1px 0 #ffffff12,0 4px 10px #0008;padding:6px;min-height:0;transition:transform .1s}
-.card:active{transform:scale(.96)}
-.card .ic{font-size:clamp(30px,8vh,50px);line-height:1}
-.card .nm{font-size:13px;font-weight:600;text-align:center}
-.card em{position:absolute;top:6px;right:8px;font-style:normal;font-size:15px}
-.card.door{border-color:var(--ac);background:linear-gradient(160deg,#3a2c14,#17120a)}
-.card.done{opacity:.5}
-.shake{animation:sh .35s}
-@keyframes sh{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-#inv{display:flex;gap:10px;z-index:2}
-.slot{flex:1;height:68px;border-radius:14px;background:#0d1016;border:2px dashed var(--ln);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#3a4252;font-size:20px}
-.slot span{font-size:28px;line-height:1}
-.slot small{font-size:10px;color:var(--dm);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
-button.slot{border-style:solid;border-color:#3a4252;background:var(--pan)}
-.slot.sel{border-color:var(--ac);box-shadow:0 0 14px #e8a63a88;background:#2a2112}
-#ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
-#ov.on{display:flex}
-.mod{width:100%;max-width:360px;max-height:86vh;overflow:auto;text-align:center;background:linear-gradient(#1c212c,#12151c);border:1px solid #3a4252;border-radius:18px;padding:18px;animation:pop .2s}
-@keyframes pop{from{transform:scale(.9);opacity:0}}
-.mod h3,.mod h2{margin:0 0 10px;font-family:"Arial Narrow",Impact,sans-serif;letter-spacing:.05em}
-.mod p{margin:0 0 6px;line-height:1.5;font-size:15px}
-.mod ol{text-align:left;padding-left:20px;margin:0;font-size:14px;line-height:1.55}
-.mod ol li{margin-bottom:6px}
-.b{display:block;width:100%;height:50px;margin-top:10px;border-radius:12px;background:#262c39;font-weight:700;font-size:15px}
-.b.p{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200}
-#disp{font:700 34px ui-monospace,Menlo,monospace;letter-spacing:.3em;margin:6px 0 14px;color:var(--ac)}
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.pad button{height:58px;border-radius:12px;background:#262c39;border:1px solid var(--ln);font-size:24px}
-.pad button:active{background:#3a4252}
-.mod.map{display:flex;flex-direction:column;padding:0;overflow:hidden;height:86vh;height:86dvh;max-width:380px}
-.mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--ln);text-align:left}
-.mh h3{margin:0}.mh p{margin:2px 0 0;font-size:13px;color:var(--dm)}.mh b{color:var(--ac)}
-.lvw{flex:1;min-height:0;overflow:auto;padding:12px 14px 16px}
-.lv{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.lc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:56px;border-radius:10px;background:#262c39;border:1px solid var(--ln);padding:0}
-.lc b{font-size:15px}.lc span{font-size:11px;color:#59627a;letter-spacing:-.05em}.lc i{font-style:normal;color:var(--ac)}
-.lc.cur{border-color:var(--ac);box-shadow:0 0 10px #e8a63a77}
-.lc.lock{opacity:.45;background:#12151c}.lc.lock span{font-size:13px}
+  :root{
+    --gold:#ffc95a;
+    --gold-dim:#c8963e;
+    --bg:#07080c;
+    --panel:#11151d;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;height:100%;width:100%;
+    overflow:hidden;position:fixed;
+    background:#04050a;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color:#e9edf5;
+    user-select:none;-webkit-user-select:none;
+  }
+  #app{
+    position:fixed;inset:0;
+    max-width:480px;margin:0 auto;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    background:var(--bg);
+    box-shadow:0 0 70px rgba(0,0,0,.85);
+  }
+
+  /* ================= HUD ================= */
+  #hud{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:6px;
+    padding:calc(env(safe-area-inset-top,0px) + 7px) 9px 7px;
+    background:linear-gradient(180deg,#131822,#0a0d13);
+    border-bottom:1px solid rgba(255,201,90,.2);
+    z-index:6;
+  }
+  .hud-left{display:flex;align-items:center;gap:8px;min-width:0;}
+  .room-badge{
+    display:flex;flex-direction:column;align-items:center;
+    background:linear-gradient(180deg,#232b39,#161c26);
+    border:1px solid rgba(255,201,90,.45);
+    border-radius:9px;padding:2px 9px;line-height:1;
+    flex:0 0 auto;
+  }
+  .rb-label{font-size:7px;letter-spacing:1.4px;color:var(--gold-dim);font-weight:700;}
+  .rb-num{font-size:16px;font-weight:800;color:var(--gold);}
+  .sector-name{
+    font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;
+    color:#8d99ad;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .hud-right{display:flex;align-items:center;gap:5px;flex:0 0 auto;}
+  .icon-btn{
+    width:33px;height:33px;border-radius:9px;
+    background:linear-gradient(180deg,#202836,#141a24);
+    border:1px solid #2d3648;color:#dbe3f0;
+    font-size:15px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s, background .15s;
+  }
+  .icon-btn:active{transform:scale(.92);background:#2a3446;}
+  .ad-btn{
+    height:33px;padding:0 8px;border-radius:9px;
+    background:linear-gradient(180deg,#3a2d12,#241a08);
+    border:1px solid rgba(255,201,90,.55);
+    color:var(--gold);font-size:13px;font-weight:700;
+    display:flex;align-items:center;gap:3px;cursor:pointer;
+    transition:transform .12s;
+  }
+  .ad-btn span{font-size:10px;letter-spacing:.4px;}
+  .ad-btn:active{transform:scale(.93);}
+
+  /* ================= STAGE ================= */
+  #stage{
+    position:relative;flex:1 1 auto;min-height:0;overflow:hidden;
+    background:#07080c;
+  }
+  #scene{display:block;width:100%;height:100%;}
+
+  /* hotspots */
+  .hotspot{cursor:pointer;}
+  .hotspot:not(.found){animation:hsPulse 2.6s ease-in-out infinite;}
+  .hotspot.found{opacity:.45;animation:none;}
+  @keyframes hsPulse{
+    0%,100%{filter:drop-shadow(0 0 0 rgba(255,201,90,0));}
+    50%{filter:drop-shadow(0 0 8px rgba(255,201,90,.9));}
+  }
+
+  /* bars */
+  #bars{
+    transition:transform 1.55s cubic-bezier(.65,0,.25,1);
+    will-change:transform;
+  }
+  #bars.open{transform:translateY(-620px);}
+
+  /* elena */
+  #elena{
+    transform-box:fill-box;
+    transform-origin:50% 100%;
+    transition:transform 1s cubic-bezier(.3,1.4,.5,1);
+  }
+  #elena.free{transform:translateY(-8px) scale(1.12);}
+
+  #freedomGlow{opacity:0;transition:opacity .9s ease;}
+  #freedomGlow.show{opacity:1;}
+
+  /* speech bubble */
+  #bubbleWrap{
+    position:absolute;left:0;right:0;top:6px;
+    display:flex;justify-content:center;
+    padding:0 10px;pointer-events:none;z-index:4;
+  }
+  #bubble{
+    position:relative;
+    max-width:310px;
+    background:rgba(11,14,20,.94);
+    border:1.5px solid rgba(255,201,90,.5);
+    border-radius:14px;
+    padding:8px 13px;
+    font-size:12.5px;line-height:1.35;
+    color:#f4ead8;text-align:center;
+    box-shadow:0 8px 26px rgba(0,0,0,.6);
+    backdrop-filter:blur(3px);
+  }
+  #bubble::after{
+    content:'';position:absolute;left:50%;bottom:-8px;
+    transform:translateX(-50%);
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-top:8px solid rgba(255,201,90,.5);
+  }
+  #bubble::before{
+    content:'';position:absolute;left:50%;bottom:-6px;
+    transform:translateX(-50%);
+    border-left:7px solid transparent;
+    border-right:7px solid transparent;
+    border-top:7px solid rgba(11,14,20,.94);
+    z-index:1;
+  }
+  #bubble.pop{animation:bubblePop .34s ease;}
+  @keyframes bubblePop{
+    0%{transform:scale(.9);opacity:.4;}
+    60%{transform:scale(1.03);opacity:1;}
+    100%{transform:scale(1);}
+  }
+
+  /* clue toast */
+  #clueToast{
+    position:absolute;left:9px;right:9px;bottom:9px;
+    background:rgba(9,11,17,.96);
+    border:1px solid rgba(255,201,90,.45);
+    border-radius:12px;
+    padding:9px 12px;
+    font-size:12px;line-height:1.4;color:#f2e7d3;
+    opacity:0;transform:translateY(14px);
+    transition:opacity .3s ease, transform .3s ease;
+    pointer-events:none;z-index:4;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);
+  }
+  #clueToast.show{opacity:1;transform:translateY(0);}
+  #clueToast b{color:var(--gold);font-size:15px;}
+
+  /* alarm flash */
+  #alarmFlash{
+    position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;
+    background:radial-gradient(circle at 50% 50%,rgba(255,40,40,0) 25%,rgba(255,30,30,.6) 100%);
+  }
+  #alarmFlash.show{animation:alarmPulse .65s ease;}
+  @keyframes alarmPulse{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+
+  /* ================= DOCK ================= */
+  #dock{
+    flex:0 0 auto;
+    display:flex;align-items:center;gap:9px;
+    padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:linear-gradient(0deg,#131822,#0a0d13);
+    border-top:1px solid rgba(255,201,90,.2);
+    z-index:6;
+  }
+  .dock-label{
+    font-size:8px;letter-spacing:1.3px;color:#6f7b8e;
+    font-weight:800;writing-mode:vertical-rl;transform:rotate(180deg);
+    flex:0 0 auto;
+  }
+  .digits{display:flex;gap:6px;flex:1 1 auto;justify-content:center;}
+  .slot{
+    width:36px;height:36px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    background:#151b25;border:1.5px solid #2c3546;
+    font-size:17px;font-weight:800;color:#5d6879;
+    transition:all .25s ease;
+  }
+  .slot.on{
+    background:linear-gradient(180deg,#2a2311,#1a1509);
+    border-color:rgba(255,201,90,.8);
+    color:var(--gold);
+    box-shadow:0 0 14px rgba(255,201,90,.35);
+  }
+  #openKeypadBtn{
+    flex:0 0 auto;
+    height:36px;padding:0 13px;border-radius:9px;
+    background:linear-gradient(180deg,#2b3547,#1a212d);
+    border:1px solid #3b465c;color:#dbe3f0;
+    font-size:16px;cursor:pointer;transition:transform .12s;
+  }
+  #openKeypadBtn:active{transform:scale(.94);}
+
+  /* ================= MODALS ================= */
+  .modal{
+    position:fixed;inset:0;z-index:100;
+    display:none;align-items:center;justify-content:center;
+    padding:14px;
+    background:rgba(3,4,8,.86);
+    backdrop-filter:blur(5px);
+  }
+  .modal.show{display:flex;}
+  .modal-card{
+    width:100%;max-width:350px;max-height:88vh;
+    display:flex;flex-direction:column;
+    background:linear-gradient(165deg,#161c26,#0a0d13);
+    border:1px solid rgba(255,201,90,.3);
+    border-radius:18px;
+    padding:15px;
+    box-shadow:0 24px 70px rgba(0,0,0,.8);
+    animation:cardIn .26s cubic-bezier(.2,1.3,.4,1);
+  }
+  @keyframes cardIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-title{
+    font-size:15px;font-weight:800;letter-spacing:.6px;
+    color:var(--gold);text-align:center;margin:0 0 12px;
+    text-transform:uppercase;
+  }
+
+  /* keypad */
+  .code-display{
+    display:flex;gap:8px;justify-content:center;margin-bottom:14px;
+  }
+  .cd-box{
+    width:46px;height:52px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    background:#0a0e14;border:1.5px solid #2c3546;
+    font-size:23px;font-weight:800;color:#4b5668;
+    font-family:monospace;
+    transition:all .18s;
+  }
+  .cd-box.filled{
+    border-color:rgba(255,201,90,.85);
+    color:var(--gold);
+    box-shadow:0 0 16px rgba(255,201,90,.3) inset;
+  }
+  .code-display.shake{animation:shakeX .4s ease;}
+  @keyframes shakeX{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-9px)}
+    40%{transform:translateX(9px)}
+    60%{transform:translateX(-6px)}
+    80%{transform:translateX(6px)}
+  }
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:11px;}
+  .key{
+    height:48px;border-radius:11px;
+    background:linear-gradient(180deg,#232c3b,#161d28);
+    border:1px solid #333d4f;
+    color:#e6ecf6;font-size:19px;font-weight:700;
+    cursor:pointer;transition:transform .09s, background .12s;
+  }
+  .key:active{transform:scale(.93);background:#313c50;}
+  .key-ok{background:linear-gradient(180deg,#1d5133,#123322);border-color:#2f8a56;color:#7dffb0;}
+  .key-fn{background:linear-gradient(180deg,#4a2323,#2a1212);border-color:#7c3a3a;color:#ff9d9d;}
+
+  /* buttons */
+  .btn{
+    width:100%;height:44px;border-radius:12px;
+    font-size:14px;font-weight:800;letter-spacing:.4px;
+    cursor:pointer;transition:transform .12s, filter .15s;
+    margin-top:8px;border:none;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-gold{
+    background:linear-gradient(180deg,#ffd97a,#d99e2b);
+    color:#221a05;
+    box-shadow:0 6px 20px rgba(255,201,90,.3);
+  }
+  .btn-ghost{
+    background:transparent;color:#93a0b5;
+    border:1px solid #2f3a4c;
+  }
+
+  /* map */
+  .map-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+    overflow-y:auto;flex:1 1 auto;min-height:0;
+    padding:2px 4px 2px 2px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .map-cell{
+    background:linear-gradient(180deg,#1b222e,#11161f);
+    border:1px solid #2a3342;
+    border-radius:9px;
+    padding:5px 2px 4px;
+    display:flex;flex-direction:column;align-items:center;
+    color:#cdd5e2;cursor:pointer;
+    transition:transform .1s, border-color .15s;
+  }
+  .map-cell:active{transform:scale(.93);}
+  .map-cell.locked{opacity:.32;cursor:not-allowed;}
+  .map-cell.done{border-color:rgba(255,201,90,.55);background:linear-gradient(180deg,#232b1c,#151a10);}
+  .map-cell.current{border-color:#6fa8ff;box-shadow:0 0 12px rgba(111,168,255,.45);}
+  .mc-num{font-size:12px;font-weight:800;line-height:1.1;}
+  .mc-stars{font-size:8px;letter-spacing:-1px;line-height:1;margin-top:2px;}
+
+  /* win */
+  .win-title{
+    font-size:23px;font-weight:900;letter-spacing:1.5px;
+    text-align:center;color:var(--gold);
+    text-shadow:0 0 26px rgba(255,201,90,.55);
+    margin-bottom:6px;
+  }
+  .win-stars{
+    text-align:center;font-size:33px;letter-spacing:5px;
+    margin:4px 0 8px;
+    filter:drop-shadow(0 0 12px rgba(255,201,90,.65));
+    animation:starPop .6s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes starPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .win-sub{text-align:center;font-size:12px;color:#8d99ad;font-weight:700;letter-spacing:.6px;margin-bottom:10px;}
+  .win-quote{
+    text-align:center;font-size:13px;line-height:1.45;
+    color:#f2e7d3;font-style:italic;
+    background:rgba(255,201,90,.07);
+    border:1px solid rgba(255,201,90,.22);
+    border-radius:12px;padding:10px 12px;margin-bottom:6px;
+  }
+
+  /* ad */
+  .ad-box{
+    text-align:center;padding:22px 10px;
+  }
+  .ad-label{
+    font-size:10px;letter-spacing:2px;color:#6f7b8e;
+    font-weight:800;text-transform:uppercase;margin-bottom:14px;
+  }
+  .ad-visual{
+    height:110px;border-radius:12px;
+    background:repeating-linear-gradient(45deg,#151b25,#151b25 12px,#1b2230 12px,#1b2230 24px);
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;margin-bottom:14px;
+    border:1px solid #2a3342;
+  }
+  .ad-count{
+    font-size:30px;font-weight:900;color:var(--gold);
+    font-family:monospace;
+  }
+  .ad-sub{font-size:11px;color:#6f7b8e;margin-top:4px;}
+
+  .hidden{display:none !important;}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <div class="t"><b id="wing"></b><small id="rn"></small><div class="bar"><i id="pb"></i></div></div>
-    <button class="hb lvb" id="lv">🗺️ Levels</button>
-    <button class="hb hint" id="hint">💡 Hint (Ad)</button>
-    <button class="hb skip" id="skip">⏭️ Skip (Ad)</button>
-    <button class="hb" id="mute" aria-label="Sound">🔊</button>
+
+  <!-- ============ HUD ============ -->
+  <header id="hud">
+    <div class="hud-left">
+      <div class="room-badge">
+        <span class="rb-label">ROOM</span>
+        <span class="rb-num" id="roomNum">1</span>
+      </div>
+      <div class="sector-name" id="sectorName">Rusted Halls</div>
+    </div>
+    <div class="hud-right">
+      <button class="icon-btn" id="muteBtn" aria-label="Toggle sound">🔊</button>
+      <button class="icon-btn" id="mapBtn" aria-label="Level map">🗺️</button>
+      <button class="ad-btn" id="hintBtn">💡<span>Hint</span></button>
+      <button class="ad-btn" id="skipBtn">⏭️<span>Skip</span></button>
+    </div>
   </header>
-  <div id="msg"></div>
-  <div id="scene"></div>
-  <div id="inv"></div>
-  <div id="ov"><div class="mod" id="mod"></div></div>
+
+  <!-- ============ STAGE ============ -->
+  <main id="stage">
+    <svg id="scene" viewBox="0 0 400 560" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop id="wallStop1" offset="0%" stop-color="#33261a"/>
+          <stop id="wallStop2" offset="100%" stop-color="#100b07"/>
+        </linearGradient>
+        <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop id="floorStop1" offset="0%" stop-color="#241a12"/>
+          <stop id="floorStop2" offset="100%" stop-color="#0a0604"/>
+        </linearGradient>
+        <linearGradient id="barGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#333941"/>
+          <stop offset="38%" stop-color="#b4bdc9"/>
+          <stop offset="62%" stop-color="#5b636e"/>
+          <stop offset="100%" stop-color="#1e2228"/>
+        </linearGradient>
+        <radialGradient id="lampGlow" cx="50%" cy="0%" r="85%">
+          <stop offset="0%" stop-color="rgba(255,220,160,0.30)"/>
+          <stop offset="55%" stop-color="rgba(255,220,160,0.06)"/>
+          <stop offset="100%" stop-color="rgba(255,220,160,0)"/>
+        </radialGradient>
+        <radialGradient id="vignette" cx="50%" cy="50%" r="72%">
+          <stop offset="52%" stop-color="rgba(0,0,0,0)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,0.74)"/>
+        </radialGradient>
+        <radialGradient id="freedomGlow" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stop-color="rgba(255,245,200,0.95)"/>
+          <stop offset="60%" stop-color="rgba(255,220,140,0.35)"/>
+          <stop offset="100%" stop-color="rgba(255,220,140,0)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- WALL -->
+      <rect x="0" y="0" width="400" height="445" fill="url(#wallGrad)"/>
+      <g stroke="rgba(0,0,0,0.22)" stroke-width="1.2">
+        <line x1="0" y1="64" x2="400" y2="64"/>
+        <line x1="0" y1="138" x2="400" y2="138"/>
+        <line x1="0" y1="212" x2="400" y2="212"/>
+        <line x1="0" y1="286" x2="400" y2="286"/>
+        <line x1="0" y1="360" x2="400" y2="360"/>
+      </g>
+      <g stroke="rgba(0,0,0,0.16)" stroke-width="1.2">
+        <line x1="70" y1="0" x2="70" y2="64"/>
+        <line x1="200" y1="0" x2="200" y2="64"/>
+        <line x1="320" y1="0" x2="320" y2="64"/>
+        <line x1="140" y1="64" x2="140" y2="138"/>
+        <line x1="290" y1="64" x2="290" y2="138"/>
+        <line x1="60" y1="138" x2="60" y2="212"/>
+        <line x1="220" y1="138" x2="220" y2="212"/>
+        <line x1="350" y1="138" x2="350" y2="212"/>
+        <line x1="110" y1="212" x2="110" y2="286"/>
+        <line x1="270" y1="212" x2="270" y2="286"/>
+        <line x1="30" y1="286" x2="30" y2="360"/>
+        <line x1="170" y1="286" x2="170" y2="360"/>
+        <line x1="330" y1="286" x2="330" y2="360"/>
+        <line x1="90" y1="360" x2="90" y2="445"/>
+        <line x1="240" y1="360" x2="240" y2="445"/>
+      </g>
+
+      <!-- FLOOR -->
+      <rect x="0" y="445" width="400" height="115" fill="url(#floorGrad)"/>
+      <line x1="0" y1="445" x2="400" y2="445" stroke="rgba(255,255,255,0.07)" stroke-width="2.5"/>
+      <g stroke="rgba(255,255,255,0.045)" stroke-width="1.2">
+        <line x1="0" y1="482" x2="400" y2="482"/>
+        <line x1="0" y1="524" x2="400" y2="524"/>
+        <line x1="110" y1="445" x2="70" y2="560"/>
+        <line x1="200" y1="445" x2="200" y2="560"/>
+        <line x1="290" y1="445" x2="330" y2="560"/>
+      </g>
+
+      <!-- LAMP WASH -->
+      <rect x="0" y="0" width="400" height="560" fill="url(#lampGlow)" pointer-events="none"/>
+
+      <!-- POSTER HOTSPOT -->
+      <g class="hotspot" data-hot="poster">
+        <rect x="44" y="150" width="72" height="96" rx="3" fill="#cbbd9d"/>
+        <rect x="44" y="150" width="72" height="96" rx="3" fill="none" stroke="#7a6a4a" stroke-width="2"/>
+        <rect x="52" y="160" width="56" height="9" rx="2" fill="#8a7a58" opacity="0.5"/>
+        <rect x="52" y="176" width="42" height="6" rx="2" fill="#8a7a58" opacity="0.4"/>
+        <rect x="52" y="188" width="50" height="6" rx="2" fill="#8a7a58" opacity="0.4"/>
+        <circle cx="80" cy="217" r="14" fill="#b0a184" opacity="0.55"/>
+        <path d="M44 246 L116 226 L116 246 Z" fill="#000" opacity="0.16"/>
+      </g>
+
+      <!-- VENT HOTSPOT -->
+      <g class="hotspot" data-hot="vent">
+        <rect x="284" y="148" width="70" height="50" rx="4" fill="#20242a"/>
+        <rect x="284" y="148" width="70" height="50" rx="4" fill="none" stroke="#5b636e" stroke-width="2"/>
+        <g stroke="#4d545e" stroke-width="2.6" stroke-linecap="round">
+          <line x1="291" y1="157" x2="347" y2="157"/>
+          <line x1="291" y1="166" x2="347" y2="166"/>
+          <line x1="291" y1="175" x2="347" y2="175"/>
+          <line x1="291" y1="184" x2="347" y2="184"/>
+        </g>
+        <circle cx="289" cy="153" r="2.2" fill="#9aa3af"/>
+        <circle cx="349" cy="153" r="2.2" fill="#9aa3af"/>
+        <circle cx="289" cy="193" r="2.2" fill="#9aa3af"/>
+        <circle cx="349" cy="193" r="2.2" fill="#9aa3af"/>
+      </g>
+
+      <!-- KEYPAD HOTSPOT -->
+      <g class="hotspot" data-hot="keypad">
+        <rect x="298" y="320" width="70" height="100" rx="7" fill="#171b21" stroke="#4d545e" stroke-width="2"/>
+        <rect x="306" y="328" width="54" height="20" rx="3" fill="#07160e" stroke="#2c5c3e" stroke-width="1.6"/>
+        <text x="333" y="343" font-family="monospace" font-size="14" fill="#4dff9a" text-anchor="middle" letter-spacing="2">----</text>
+        <g fill="#39414b">
+          <rect x="307" y="356" width="15" height="13" rx="2.5"/>
+          <rect x="326" y="356" width="15" height="13" rx="2.5"/>
+          <rect x="345" y="356" width="15" height="13" rx="2.5"/>
+          <rect x="307" y="375" width="15" height="13" rx="2.5"/>
+          <rect x="326" y="375" width="15" height="13" rx="2.5"/>
+          <rect x="345" y="375" width="15" height="13" rx="2.5"/>
+          <rect x="307" y="394" width="15" height="13" rx="2.5"/>
+          <rect x="326" y="394" width="15" height="13" rx="2.5"/>
+          <rect x="345" y="394" width="15" height="13" rx="2.5"/>
+        </g>
+      </g>
+
+      <!-- MATTRESS HOTSPOT -->
+      <g class="hotspot" data-hot="mattress">
+        <rect x="24" y="450" width="134" height="54" rx="16" fill="#4e453a"/>
+        <rect x="24" y="450" width="134" height="54" rx="16" fill="none" stroke="#2a241c" stroke-width="2.5"/>
+        <g stroke="#3b342b" stroke-width="5" stroke-linecap="round">
+          <line x1="46" y1="454" x2="46" y2="500"/>
+          <line x1="78" y1="454" x2="78" y2="500"/>
+          <line x1="110" y1="454" x2="110" y2="500"/>
+        </g>
+        <path d="M58 472 q16 -12 34 0 q-10 14 -34 0 z" fill="#221d16"/>
+        <circle cx="75" cy="473" r="4.5" fill="none" stroke="#9aa3af" stroke-width="1.6"/>
+      </g>
+
+      <!-- ELENA -->
+      <g id="elena">
+        <ellipse cx="200" cy="510" rx="44" ry="9" fill="rgba(0,0,0,0.45)"/>
+        <g id="elenaFigure">
+          <!-- legs -->
+          <rect x="186" y="437" width="12" height="66" rx="6" fill="#3b4150"/>
+          <rect x="202" y="437" width="12" height="66" rx="6" fill="#3b4150"/>
+          <!-- shoes -->
+          <rect x="181" y="493" width="22" height="14" rx="5" fill="#23262e"/>
+          <rect x="197" y="493" width="22" height="14" rx="5" fill="#23262e"/>
+          <!-- dress -->
+          <path d="M200 355 L172 445 Q200 457 228 445 Z" fill="#6d80a8"/>
+          <path d="M200 355 L172 445 Q200 457 228 445 Z" fill="none" stroke="#48587a" stroke-width="2"/>
+          <rect x="180" y="385" width="40" height="7" rx="3.5" fill="#3c4a66"/>
+          <!-- arms -->
+          <rect x="167" y="363" width="12" height="64" rx="6" fill="#f2c9a4"/>
+          <rect x="221" y="363" width="12" height="64" rx="6" fill="#f2c9a4"/>
+          <circle cx="173" cy="429" r="7.5" fill="#f7d2b0"/>
+          <circle cx="227" cy="429" r="7.5" fill="#f7d2b0"/>
+          <!-- neck -->
+          <rect x="193" y="341" width="14" height="18" fill="#e0ab86"/>
+          <!-- hair back -->
+          <ellipse cx="200" cy="325" rx="31" ry="33" fill="#2b1f1a"/>
+          <!-- face -->
+          <circle cx="200" cy="327" r="25" fill="#f7d2b0"/>
+          <!-- bangs -->
+          <path d="M175 319 Q200 295 225 319 Q217 305 200 303 Q183 305 175 319 Z" fill="#2b1f1a"/>
+          <!-- eyes -->
+          <ellipse cx="190" cy="329" rx="3.4" ry="4.2" fill="#20242c"/>
+          <ellipse cx="210" cy="329" rx="3.4" ry="4.2" fill="#20242c"/>
+          <circle cx="191.2" cy="327.5" r="1.3" fill="#fff" opacity="0.9"/>
+          <circle cx="211.2" cy="327.5" r="1.3" fill="#fff" opacity="0.9"/>
+          <!-- brows -->
+          <path id="browL" d="M183 321 L196 321" stroke="#2b1f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          <path id="browR" d="M204 321 L217 321" stroke="#2b1f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+          <!-- mouth -->
+          <path id="mouth" d="M191 343 Q200 338 209 343" stroke="#a34b4b" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <!-- blush -->
+          <ellipse cx="182" cy="337" rx="5" ry="3" fill="#e88b8b" opacity="0.35"/>
+          <ellipse cx="218" cy="337" rx="5" ry="3" fill="#e88b8b" opacity="0.35"/>
+        </g>
+      </g>
+
+      <!-- FREEDOM GLOW -->
+      <ellipse id="freedomGlow" cx="200" cy="320" rx="185" ry="250" fill="url(#freedomGlow)" pointer-events="none"/>
+
+      <!-- PRISON BARS -->
+      <g id="bars" pointer-events="none">
+        <g fill="url(#barGrad)">
+          <rect x="20" y="-20" width="10" height="600" rx="3"/>
+          <rect x="70" y="-20" width="10" height="600" rx="3"/>
+          <rect x="120" y="-20" width="10" height="600" rx="3"/>
+          <rect x="170" y="-20" width="10" height="600" rx="3"/>
+          <rect x="220" y="-20" width="10" height="600" rx="3"/>
+          <rect x="270" y="-20" width="10" height="600" rx="3"/>
+          <rect x="320" y="-20" width="10" height="600" rx="3"/>
+          <rect x="370" y="-20" width="10" height="600" rx="3"/>
+        </g>
+        <rect x="0" y="26" width="400" height="15" rx="4" fill="url(#barGrad)"/>
+        <rect x="0" y="26" width="400" height="6" rx="3" fill="rgba(255,255,255,0.09)"/>
+        <rect x="0" y="500" width="400" height="17" rx="4" fill="url(#barGrad)"/>
+      </g>
+
+      <!-- VIGNETTE -->
+      <rect x="0" y="0" width="400" height="560" fill="url(#vignette)" pointer-events="none"/>
+    </svg>
+
+    <div id="bubbleWrap">
+      <div id="bubble"><span id="bubbleText">Please... you're my only hope.</span></div>
+    </div>
+
+    <div id="clueToast"></div>
+    <div id="alarmFlash"></div>
+  </main>
+
+  <!-- ============ DOCK ============ -->
+  <footer id="dock">
+    <div class="dock-label">CLUES</div>
+    <div class="digits" id="digitSlots">
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+      <div class="slot">?</div>
+    </div>
+    <button id="openKeypadBtn" aria-label="Open keypad">🔐</button>
+  </footer>
 </div>
+
+<!-- ============ KEYPAD MODAL ============ -->
+<div class="modal" id="keypadModal">
+  <div class="modal-card">
+    <h3 class="modal-title">🔐 Cell Door Keypad</h3>
+    <div class="code-display" id="codeDisplay">
+      <span class="cd-box">_</span>
+      <span class="cd-box">_</span>
+      <span class="cd-box">_</span>
+      <span class="cd-box">_</span>
+    </div>
+    <div class="keypad" id="keypadPad">
+      <button class="key" data-k="1">1</button>
+      <button class="key" data-k="2">2</button>
+      <button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button>
+      <button class="key" data-k="5">5</button>
+      <button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button>
+      <button class="key" data-k="8">8</button>
+      <button class="key" data-k="9">9</button>
+      <button class="key key-fn" data-k="C">C</button>
+      <button class="key" data-k="0">0</button>
+      <button class="key key-ok" data-k="OK">✓</button>
+    </div>
+    <button class="btn btn-ghost" id="kpClose">Close</button>
+  </div>
+</div>
+
+<!-- ============ MAP MODAL ============ -->
+<div class="modal" id="mapModal">
+  <div class="modal-card">
+    <h3 class="modal-title">🗺️ Prison Map — 100 Rooms</h3>
+    <div class="map-grid" id="mapGrid"></div>
+    <button class="btn btn-ghost" id="mapClose">Close</button>
+  </div>
+</div>
+
+<!-- ============ VICTORY MODAL ============ -->
+<div class="modal" id="winModal">
+  <div class="modal-card">
+    <div class="win-title">🔓 FREEDOM!</div>
+    <div class="win-stars" id="winStars">⭐⭐⭐</div>
+    <div class="win-sub" id="winSub">Room 1 cleared</div>
+    <div class="win-quote" id="winQuote">“Thank you! Let's move to the next room!”</div>
+    <button class="btn btn-gold" id="nextBtn">Next Room →</button>
+    <button class="btn btn-ghost" id="shareBtn">📢 Share Rescue</button>
+  </div>
+</div>
+
+<!-- ============ AD MODAL ============ -->
+<div class="modal" id="adModal">
+  <div class="modal-card">
+    <div class="ad-box">
+      <div class="ad-label" id="adLabel">Rewarded Ad</div>
+      <div class="ad-visual">📺</div>
+      <div class="ad-count" id="adCount">3</div>
+      <div class="ad-sub">Your reward unlocks in a moment…</div>
+      <button class="btn btn-gold hidden" id="adCloseBtn">Claim Reward</button>
+    </div>
+  </div>
+</div>
+
 <script>
-"use strict";
-/* ---------- Telegram ---------- */
-const tg = window.Telegram && window.Telegram.WebApp;
-try { tg.ready(); tg.expand(); tg.setHeaderColor("#07080b"); tg.setBackgroundColor("#07080b"); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (e) {}
-const APP_URL = "https://t.me/YOUR_BOT_USERNAME/YOUR_APP_SHORT_NAME"; // <-- replace with your Mini App link
-const hap = t => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
-const $ = s => document.querySelector(s);
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
 
-/* ---------- Save ---------- */
-function fresh() { return { room: 1, max: 1, mute: 0, salt: Math.floor(Math.random() * 1e6) }; }
-function load() { try { const s = JSON.parse(localStorage.getItem("pe100")); if (s && s.room) { s.max = Math.max(s.max || 1, s.room); return s; } } catch (e) {} return fresh(); }
-function save() { try { localStorage.setItem("pe100", JSON.stringify(S)); } catch (e) {} }
-function loadStars() { try { const o = JSON.parse(localStorage.getItem("pe_stars")); if (o && typeof o === "object") return o; } catch (e) {} return {}; }
-function saveStars() { try { localStorage.setItem("pe_stars", JSON.stringify(ST)); } catch (e) {} }
-let S = load(), ST = loadStars(), cur, inv = [], sel = -1, run = { wrong: 0, hint: 0, skip: 0 };
+  /* =========================================================
+     HELPERS
+     ========================================================= */
+  function $(id) { return document.getElementById(id); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function clampInt(v, lo, hi) {
+    v = parseInt(v, 10);
+    if (isNaN(v)) v = lo;
+    return Math.max(lo, Math.min(hi, v));
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
 
-/* ---------- Sound (Web Audio, no files) ---------- */
-let ac;
-function A() {
-  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
-  if (ac && ac.state === "suspended") ac.resume();
-  return ac;
-}
-function tone(f, d, ty = "sine", v = .15, t0 = 0, f2) {
-  const c = A(); if (!c || S.mute) return;
-  const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
-  o.type = ty; o.frequency.setValueAtTime(f, t);
-  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
-  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
-  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .03);
-}
-const sfx = {
-  click: () => tone(420, .06, "square", .05),
-  pick: () => [880, 1175, 1568].forEach((f, i) => tone(f, .28, "sine", .14, i * .08)),
-  err: () => { tone(120, .35, "sawtooth", .16, 0, 60); hap("error"); },
-  rattle: () => { for (let i = 0; i < 6; i++) tone(160 + Math.random() * 120, .05, "square", .09, i * .055); hap("error"); },
-  beep: d => tone(520 + d * 48, .09, "square", .06),
-  win: () => { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i === 6 ? .7 : .26, "triangle", .18, i * .13)); hap("success"); }
-};
+  /* =========================================================
+     SOUND ENGINE (Web Audio API)
+     ========================================================= */
+  var Sound = {
+    ctx: null,
+    master: null,
+    muted: false,
+    init: function () {
+      if (!this.ctx) {
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          this.ctx = new AC();
+          this.master = this.ctx.createGain();
+          this.master.gain.value = 0.55;
+          this.master.connect(this.ctx.destination);
+        } catch (e) { this.ctx = null; }
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(function () {});
+      }
+    },
+    tone: function (freq, dur, type, vol, delay, endFreq) {
+      if (!this.ctx || this.muted) return;
+      try {
+        var t0 = this.ctx.currentTime + (delay || 0);
+        var o = this.ctx.createOscillator();
+        var g = this.ctx.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(freq, t0);
+        if (endFreq) o.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol || 0.15), t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(this.master);
+        o.start(t0); o.stop(t0 + dur + 0.06);
+      } catch (e) {}
+    },
+    noise: function (dur, vol, delay, filterFreq) {
+      if (!this.ctx || this.muted) return;
+      try {
+        var t0 = this.ctx.currentTime + (delay || 0);
+        var len = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+        var buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        var d = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+        var src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        var f = this.ctx.createBiquadFilter();
+        f.type = 'bandpass';
+        f.frequency.value = filterFreq || 1200;
+        f.Q.value = 1.1;
+        var g = this.ctx.createGain();
+        g.gain.value = vol || 0.2;
+        src.connect(f); f.connect(g); g.connect(this.master);
+        src.start(t0);
+      } catch (e) {}
+    },
+    beep: function () { this.tone(880, 0.07, 'square', 0.07); },
+    pickup: function () {
+      this.tone(660, 0.10, 'sine', 0.14);
+      this.tone(990, 0.14, 'sine', 0.12, 0.09);
+      this.tone(1320, 0.20, 'sine', 0.10, 0.18);
+    },
+    error: function () {
+      this.tone(190, 0.18, 'sawtooth', 0.16);
+      this.tone(120, 0.30, 'sawtooth', 0.14, 0.14);
+    },
+    rattle: function () {
+      this.noise(0.35, 0.20, 0, 900);
+      this.noise(0.25, 0.14, 0.12, 600);
+    },
+    barsOpen: function () {
+      this.noise(1.3, 0.24, 0, 480);
+      this.tone(90, 1.3, 'sawtooth', 0.09, 0, 55);
+    },
+    footstep: function () { this.noise(0.09, 0.16, 0, 300); },
+    fanfare: function () {
+      var notes = [523.25, 659.25, 783.99, 1046.5];
+      for (var i = 0; i < notes.length; i++) {
+        this.tone(notes[i], 0.36, 'triangle', 0.15, i * 0.13);
+      }
+      this.tone(1318.5, 0.85, 'triangle', 0.13, 0.55);
+      this.tone(1046.5, 0.95, 'sine', 0.09, 0.55);
+    }
+  };
 
-/* ---------- Content ---------- */
-// [name, icon, [doorIcon, doorName], [toolIcon, toolName], "search objects"]
-const WINGS = [
- ["Cell Block","🔒",["🚪","Cell Door"],["🥄","Sharpened Spoon"],"🛏️ Bunk,🚽 Toilet,📚 Bookshelf,🧱 Loose Brick,🪞 Steel Mirror,🧦 Sock Pile,🪑 Stool,💡 Bare Bulb"],
- ["Guard Hall","💂",["🚧","Steel Gate"],["🪪","Guard Keycard"],"🪑 Guard Desk,☕ Coffee Mug,📻 Radio,🗄️ Locker,🖥️ Monitor,🧥 Coat Rack,📋 Roster,🔦 Flashlight"],
- ["Warden's Office","🏛️",["🚪","Private Exit"],["🗝️","Brass Key"],"🖼️ Portrait,🗃️ File Cabinet,🖋️ Desk,🍾 Liquor Cabinet,🕰️ Grandfather Clock,🪴 Plant,📞 Telephone,🧳 Briefcase"],
- ["Boiler Room","🔥",["🕳️","Iron Hatch"],["🔧","Pipe Wrench"],"🔥 Furnace,🛢️ Oil Drum,🌡️ Gauge,⚙️ Gears,🧰 Toolbox,🪜 Ladder,💨 Steam Pipe,🕸️ Cobwebs"],
- ["Medical Bay","⚕️",["🚪","Quarantine Door"],["🔪","Scalpel"],"🛏️ Cot,💊 Pill Cabinet,🩻 X-Ray,🧴 Sink,🧫 Lab Tray,🩺 Stethoscope,🪟 Curtain,🗄️ Records"],
- ["Security Vault","🏦",["🚪","Vault Door"],["🔑","Vault Key"],"💰 Cash Crate,📹 Camera,🧲 Magnet Panel,📦 Deposit Boxes,🧮 Ledger,🕯️ Candle,📟 Terminal,🗝️ Key Rack"],
- ["Laundry Chute","🧺",["🕳️","Chute Hatch"],["🪝","Hook Pole"],"🧺 Laundry Cart,🧼 Soap Bin,👕 Uniform Pile,🌀 Dryer,🧵 Sewing Kit,🪣 Bucket,🚿 Wash Basin,🧹 Mop"],
- ["Armory","🛡️",["🚪","Blast Door"],["✂️","Bolt Cutters"],"🛡️ Riot Shield,🪖 Helmet,📦 Supply Crate,🥋 Body Armor,🔦 Lantern,📜 Inventory Log,🧯 Extinguisher,🗄️ Gear Rack"],
- ["Watchtower","🔭",["🚪","Tower Hatch"],["🪢","Climbing Rope"],"🔭 Telescope,💡 Searchlight,🪟 Window,☎️ Field Phone,🧭 Compass,🪜 Stairs,🕊️ Pigeon Nest,📡 Antenna"],
- ["Main Gate","🚨",["⛩️","Main Gate"],["🗝️","Master Key"],"🚧 Barrier,🚨 Alarm Panel,🛂 Checkpoint,🚗 Prison Van,📣 Loudspeaker,🧱 Outer Wall,🪧 Sign,⛓️ Chains"]
-];
-const KINDS = ["tool", "math", "symbol", "safe"];
-const NOTES = ['Scratched into the wall: "#"', 'A guard\'s sticky note: "#"', 'Smudged marker on the pipe: "#"', 'Whispered by a cellmate: "#"', 'Carved under the surface: "#"'];
-const DECOY = ["Just dust and rust.", "Nothing useful here.", "Cold, damp and creepy.", "Distant footsteps echo...", "Tally marks. Not helpful.", "An empty bottle. Nothing inside.", "Someone was here before you."];
-const SYMS = ["▲", "●", "■", "◆", "★", "☾", "✚", "☀"];
+  /* =========================================================
+     DATA
+     ========================================================= */
+  var THEMES = [
+    { name: 'Rusted Halls',  wall1: '#33261a', wall2: '#100b07', floor1: '#241a12', floor2: '#0a0604' },
+    { name: 'Iron Crypt',    wall1: '#232a33', wall2: '#0b0e12', floor1: '#1a1f26', floor2: '#07090c' },
+    { name: 'Drowned Cells', wall1: '#1c3330', wall2: '#07100f', floor1: '#142523', floor2: '#050c0b' },
+    { name: 'Ashen Block',   wall1: '#302424', wall2: '#0f0909', floor1: '#221818', floor2: '#080404' },
+    { name: 'Shadow Wing',   wall1: '#2a2038', wall2: '#0d0813', floor1: '#1e1729', floor2: '#080510' },
+    { name: 'Frozen Keep',   wall1: '#1e2c3c', wall2: '#070c12', floor1: '#16212d', floor2: '#050a0f' },
+    { name: 'Crimson Vault', wall1: '#3a1a1c', wall2: '#120607', floor1: '#2a1113', floor2: '#0c0304' },
+    { name: 'Silent Ward',   wall1: '#26301f', wall2: '#0b0f08', floor1: '#1b2317', floor2: '#070a06' },
+    { name: 'Neon Dungeon',  wall1: '#241a30', wall2: '#0a0612', floor1: '#1a1224', floor2: '#06030c' },
+    { name: 'Final Gate',    wall1: '#342a16', wall2: '#100d05', floor1: '#251d0f', floor2: '#090701' }
+  ];
 
-/* ---------- Procedural generator ---------- */
-function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function shuf(a, r) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-const pick = (a, r) => a[Math.floor(r() * a.length)];
-const code4 = r => [0, 0, 0, 0].map(() => Math.floor(r() * 10)).join("");
+  var CLUES = {
+    mattress: [
+      'You heave the torn mattress aside. Carved into the bed frame: <b>{d0}</b> — the 1st number!',
+      'A spring is loose. Wrapped around it, a paper scrap reads: 1st = <b>{d0}</b>.',
+      'Under the mattress, a nail scratch: <b>{d0}</b>. That is the first digit!'
+    ],
+    poster: [
+      'You peel back the poster. Painted on the wall: <b>{d1}</b> — the 2nd number.',
+      'Behind the poster corner, a faded scrawl. 2nd digit = <b>{d1}</b>.',
+      'The poster hides a message: “Second number <b>{d1}</b>”.'
+    ],
+    vent: [
+      'You wrench the grate open. Two numbers scratched inside: <b>{d2}</b> and <b>{d3}</b>.',
+      'The vent is loose. Inside, chalk marks: <b>{d2}</b> … <b>{d3}</b>. The last two digits!',
+      'Dust falls as the grate opens. Etched into the metal: <b>{d2}{d3}</b> — digits 3 and 4.'
+    ]
+  };
 
-function equation(r, lv) { // returns [question, two-digit answer]
-  const ri = k => Math.floor(r() * k), t = ri(lv < .25 ? 2 : lv < .55 ? 3 : 5);
-  if (t === 0) { const a = 10 + ri(45), b = 10 + ri(45); return [`${a} + ${b} = ?`, a + b]; }
-  if (t === 1) { const a = 50 + ri(49), b = 1 + ri(a - 10); return [`${a} − ${b} = ?`, a - b]; }
-  if (t === 2) { const a = 2 + ri(8), lo = Math.ceil(10 / a), b = lo + ri(Math.floor(99 / a) - lo + 1); return [`${a} × ${b} = ?`, a * b]; }
-  if (t === 3) { const s = 1 + ri(5), d = 3 + ri(4); return [`${s}, ${s + d}, ${s + 2 * d}, ${s + 3 * d}, ?`, s + 4 * d]; }
-  const s = 2 + ri(4); return [`${s}, ${s * 2}, ${s * 4}, ${s * 8}, ?`, s * 16];
-}
-function fragment(v, lv, ri) {
-  if (lv < .4) return v;
-  if (lv < .7) { const a = ri(v + 1); return `${a} + ${v - a}`; }
-  const k = 1 + ri(5); return `${v + k} − ${k}`;
-}
+  var OPENING_LINES = [
+    'Please… you are my only hope. Find the four numbers and open that door!',
+    'They move me again at dawn. We have to do this tonight!',
+    'I heard the guard punch a code. Search the cell — the numbers must be here!',
+    'The bars are old but the lock is new. We need that four-digit code!',
+    'Every second counts. Please, look around the cell!'
+  ];
 
-function genRoom(n) {
-  const r = rng(n * 7919 + S.salt), ri = k => Math.floor(r() * k);
-  const w = Math.floor((n - 1) / 10), W = WINGS[w], lv = n / 100;
-  const pool = shuf(W[4].split(","), r).map(s => { const i = s.indexOf(" "); return { icon: s.slice(0, i), name: s.slice(i + 1) }; });
-  const O = [], st = [], L = o => `${o.icon} ${o.name}`;
-  const add = p => { const o = Object.assign({}, pool.pop(), p); O.push(o); return o; };
-  const door = { icon: W[2][0], name: W[2][1], door: 1 }, tool = { icon: W[3][0], name: W[3][1] };
-  const kind = KINDS[(n + ri(2)) % 4]; let intro;
+  var IDLE_LINES = [
+    'Hurry… I can hear the guards down the hall.',
+    'The keypad is on the wall to the right. Find the code first!',
+    'Search everything — the mattress, the poster, the vent…',
+    'If the alarm goes off, they will come running.',
+    'I believe in you. Just a little longer.'
+  ];
 
-  if (kind === "tool") {
-    intro = "The exit is sealed tight. Something in here can force it open.";
-    door.lock = { item: tool.name };
-    if (w >= 2 && r() < .6) {
-      const c = code4(r), box = add({ give: tool, lock: { code: c } }), note = add({ clue: pick(NOTES, r).replace("#", c) });
-      st.push(`Read the ${L(note)}: the code is ${c}.`, `Enter ${c} on the ${L(box)} to get the ${L(tool)}.`);
+  var CLUE_REACTIONS = [
+    "Yes! That's one of the numbers!",
+    'Keep going — we are close!',
+    'I knew you would find it!',
+    'Perfect! Remember it!',
+    'That is it! Look for the rest!'
+  ];
+
+  var WRONG_LINES = [
+    "No! That's wrong — the alarm will wake the guards!",
+    'Wait, wait — that is not it. Try again!',
+    'Shhh! That was not the code!',
+    'The light flashed red… please be careful!'
+  ];
+
+  var ALREADY_LINES = [
+    'I already checked there…',
+    'Nothing else in that spot.',
+    'We searched that already. Look elsewhere!'
+  ];
+
+  /* =========================================================
+     STATE
+     ========================================================= */
+  var SAVE_KEY = 'saveElena_v1';
+  var state = {
+    current: 1,
+    maxUnlocked: 1,
+    stars: {},
+    muted: false
+  };
+
+  var room = null;
+  var found = [false, false, false, false];
+  var entry = '';
+  var mistakes = 0;
+  var hintsUsed = 0;
+  var solved = false;
+  var lastIdle = 0;
+  var adTimer = null;
+  var adCallback = null;
+  var toastTimer = null;
+  var exprTimer = null;
+
+  /* =========================================================
+     SAVE / LOAD
+     ========================================================= */
+  function saveState() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        current: state.current,
+        maxUnlocked: state.maxUnlocked,
+        stars: state.stars,
+        muted: state.muted
+      }));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object') return;
+      state.current = clampInt(s.current, 1, 100);
+      state.maxUnlocked = clampInt(s.maxUnlocked, 1, 100);
+      state.stars = (s.stars && typeof s.stars === 'object') ? s.stars : {};
+      state.muted = !!s.muted;
+    } catch (e) {}
+  }
+
+  /* =========================================================
+     ROOM GENERATION
+     ========================================================= */
+  function genRoom(n) {
+    var rnd = mulberry32(n * 7919 + 104729);
+    var digits = [];
+    for (var i = 0; i < 4; i++) digits.push(Math.floor(rnd() * 10));
+
+    var sector = Math.min(9, Math.floor((n - 1) / 10));
+    var theme = THEMES[sector];
+
+    function fill(tpl, map) {
+      var out = tpl;
+      for (var k in map) {
+        if (Object.prototype.hasOwnProperty.call(map, k)) {
+          out = out.split(k).join(map[k]);
+        }
+      }
+      return out;
+    }
+
+    var mt = CLUES.mattress[Math.floor(rnd() * CLUES.mattress.length)];
+    var pt = CLUES.poster[Math.floor(rnd() * CLUES.poster.length)];
+    var vt = CLUES.vent[Math.floor(rnd() * CLUES.vent.length)];
+
+    var clueTexts = {
+      mattress: fill(mt, { '{d0}': digits[0] }),
+      poster: fill(pt, { '{d1}': digits[1] }),
+      vent: fill(vt, { '{d2}': digits[2], '{d3}': digits[3] })
+    };
+
+    return {
+      n: n,
+      digits: digits,
+      code: digits.join(''),
+      sector: sector,
+      theme: theme,
+      clueTexts: clueTexts,
+      revealed: { mattress: false, poster: false, vent: false }
+    };
+  }
+
+  /* =========================================================
+     SCENE / UI
+     ========================================================= */
+  function applyTheme(t) {
+    $('wallStop1').setAttribute('stop-color', t.wall1);
+    $('wallStop2').setAttribute('stop-color', t.wall2);
+    $('floorStop1').setAttribute('stop-color', t.floor1);
+    $('floorStop2').setAttribute('stop-color', t.floor2);
+  }
+
+  function resetScene() {
+    var bars = $('bars');
+    bars.style.transition = 'none';
+    bars.classList.remove('open');
+    void bars.getBoundingClientRect();
+    bars.style.transition = '';
+
+    $('elena').classList.remove('free');
+    $('freedomGlow').classList.remove('show');
+    $('alarmFlash').classList.remove('show');
+  }
+
+  /* ---- expressions ---- */
+  var EXPR = {
+    worried: {
+      browL: 'M183 322 L196 319',
+      browR: 'M204 319 L217 322',
+      mouth: 'M191 344 Q200 339 209 344',
+      fill: 'none'
+    },
+    hopeful: {
+      browL: 'M183 319 L196 318',
+      browR: 'M204 318 L217 319',
+      mouth: 'M192 342 Q200 347 208 342',
+      fill: 'none'
+    },
+    panicked: {
+      browL: 'M183 316 L196 319',
+      browR: 'M204 319 L217 316',
+      mouth: 'M191 340 Q200 334 209 340 Q200 352 191 340 Z',
+      fill: '#5a2020'
+    },
+    happy: {
+      browL: 'M183 318 L196 316',
+      browR: 'M204 316 L217 318',
+      mouth: 'M190 340 Q200 350 210 340',
+      fill: 'none'
+    }
+  };
+
+  function setExpression(name, revertMs) {
+    var e = EXPR[name] || EXPR.worried;
+    var bl = $('browL'), br = $('browR'), mo = $('mouth');
+    if (!bl || !br || !mo) return;
+
+    bl.setAttribute('d', e.browL);
+    br.setAttribute('d', e.browR);
+    mo.setAttribute('d', e.mouth);
+
+    if (e.fill && e.fill !== 'none') {
+      mo.setAttribute('fill', e.fill);
+      mo.setAttribute('stroke', 'none');
     } else {
-      const box = add({ give: tool });
-      st.push(`Search the ${L(box)}: the ${L(tool)} is hidden there.`);
+      mo.setAttribute('fill', 'none');
+      mo.setAttribute('stroke', '#a34b4b');
     }
-    st.push(`Equip the ${L(tool)} from your inventory, then tap the ${L(door)}.`);
-  } else if (kind === "math") {
-    intro = "A guard scribbled the exit code as riddles. Solve both halves.";
-    const a = equation(r, lv), b = equation(r, lv), c = "" + a[1] + b[1];
-    door.lock = { code: c };
-    const p1 = add({ clue: `Torn note, part 1 of 2. These are the first two digits:<br><b>${a[0]}</b>` });
-    const p2 = add({ clue: `Torn note, part 2 of 2. These are the last two digits:<br><b>${b[0]}</b>` });
-    st.push(`${L(p1)} solves to ${a[1]}.`, `${L(p2)} solves to ${b[1]}.`, `Enter ${c} on the ${L(door)}.`);
-  } else if (kind === "symbol") {
-    intro = "Strange symbols are carved around the room. Decode them.";
-    const syms = shuf(SYMS.slice(), r), digs = shuf([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], r), n4 = lv > .4 ? 5 : 4;
-    const map = syms.slice(0, n4).map((s, i) => [s, digs[i]]);
-    const seq = shuf(map.slice(0, 4), r), c = seq.map(m => m[1]).join("");
-    door.lock = { code: c };
-    const lg = add({ clue: `Chart on the surface:<br><b>${shuf(map.slice(), r).map(m => m[0] + " = " + m[1]).join("&nbsp;&nbsp;")}</b>` });
-    const sq = add({ clue: `Symbols carved in a row:<br><b style="font-size:26px;letter-spacing:.2em">${seq.map(m => m[0]).join(" ")}</b>` });
-    st.push(`${L(lg)} shows what each symbol means.`, `${L(sq)} shows the order: ${seq.map(m => m[0]).join(" ")}.`, `That translates to ${c}. Enter it on the ${L(door)}.`);
-  } else {
-    intro = "A wall safe holds the key. Its combination is scattered around the room.";
-    const d = [0, 0, 0, 0].map(() => ri(10)), c = d.join("");
-    const safe = add({ icon: "🔐", name: "Wall Safe", give: tool, lock: { code: c } });
-    const f = d.map((v, i) => add({ clue: `Scrap of paper:<br>Digit ${i + 1} of 4 is <b>${fragment(v, lv, ri)}</b>` }));
-    door.lock = { item: tool.name };
-    f.forEach((o, i) => st.push(`${L(o)} gives digit ${i + 1}: ${d[i]}.`));
-    st.push(`Enter ${c} on the ${L(safe)} to get the ${L(tool)}.`, `Equip the ${L(tool)}, then tap the ${L(door)}.`);
+
+    if (exprTimer) { clearTimeout(exprTimer); exprTimer = null; }
+    if (revertMs && name !== 'worried') {
+      exprTimer = setTimeout(function () { setExpression('worried'); }, revertMs);
+    }
   }
-  while (O.length < 5) add({ txt: pick(DECOY, r) });
-  O.push(door); shuf(O, r);
-  return { O, st, intro, w, kind, n };
-}
 
-/* ---------- UI helpers ---------- */
-function msg(t) { $("#msg").textContent = t; }
-function modal(html, btns, sticky) {
-  $("#mod").className = "mod"; $("#mod").innerHTML = html + (btns || []).map((b, i) => `<button class="b${b[2] ? " p" : ""}" data-b="${i}">${b[0]}</button>`).join("");
-  $("#ov").classList.add("on"); $("#ov").dataset.sticky = sticky ? 1 : "";
-  $("#mod").onclick = e => { const b = e.target.closest("[data-b]"); if (b) { const bt = btns[+b.dataset.b]; if (!bt[3]) closeModal(); if (bt[1]) bt[1](); } };
-}
-function closeModal() { $("#ov").classList.remove("on"); $("#mod").onclick = null; }
-$("#ov").addEventListener("click", e => { if (e.target.id === "ov" && !$("#ov").dataset.sticky) { sfx.click(); closeModal(); } });
+  /* ---- speech ---- */
+  function say(text) {
+    var b = $('bubble');
+    var t = $('bubbleText');
+    if (!b || !t) return;
+    t.textContent = text;
+    b.classList.remove('pop');
+    void b.offsetWidth;
+    b.classList.add('pop');
+  }
 
-function render() {
-  const W = WINGS[cur.w];
-  $("#wing").textContent = `${W[1]} ${W[0]}`;
-  $("#rn").textContent = `Room ${cur.n} of 100  ·  Wing ${cur.w + 1}/10`;
-  $("#pb").style.width = cur.n + "%";
-  $("#mute").textContent = S.mute ? "🔇" : "🔊";
-  $("#scene").innerHTML = cur.O.map((o, i) => {
-    const locked = o.lock && !o.open;
-    return `<button class="card${o.door ? " door" : ""}${o.taken || (o.open && !o.door) ? " done" : ""}" data-i="${i}"><span class="ic">${o.icon}</span><span class="nm">${o.name}</span>${locked ? "<em>🔒</em>" : ""}</button>`;
-  }).join("");
-  $("#inv").innerHTML = [0, 1, 2].map(i => inv[i]
-    ? `<button class="slot${i === sel ? " sel" : ""}" data-i="${i}"><span>${inv[i].icon}</span><small>${inv[i].name}</small></button>`
-    : `<div class="slot">·</div>`).join("");
-}
-function shake(i) { const c = $(`#scene [data-i="${i}"]`); if (c) { c.classList.add("shake"); c.addEventListener("animationend", () => c.classList.remove("shake"), { once: true }); } }
+  /* ---- clue toast ---- */
+  function showToast(html) {
+    var toast = $('clueToast');
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove('show');
+    }, 4200);
+  }
 
-/* ---------- Game flow ---------- */
-function start(n) {
-  n = Math.max(1, Math.min(100, n)); S.room = n; save(); cur = genRoom(n); inv = []; sel = -1; run = { wrong: 0, hint: 0, skip: 0 };
-  render(); msg(cur.intro);
-}
-$("#scene").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) tap(+c.dataset.i); });
-$("#inv").addEventListener("click", e => {
-  const s = e.target.closest("button.slot"); if (!s) return;
-  const i = +s.dataset.i; sel = sel === i ? -1 : i; sfx.click();
-  msg(sel >= 0 ? `${inv[sel].name} equipped. Tap a locked object to use it.` : "Item unequipped."); render();
+  /* ---- digit slots ---- */
+  function renderDigits() {
+    var slots = document.querySelectorAll('#digitSlots .slot');
+    for (var i = 0; i < slots.length; i++) {
+      if (found[i]) {
+        slots[i].textContent = String(room.digits[i]);
+        slots[i].classList.add('on');
+      } else {
+        slots[i].textContent = '?';
+        slots[i].classList.remove('on');
+      }
+    }
+  }
+
+  /* ---- keypad entry ---- */
+  function renderEntry() {
+    var boxes = document.querySelectorAll('#codeDisplay .cd-box');
+    for (var i = 0; i < boxes.length; i++) {
+      var ch = entry.charAt(i);
+      boxes[i].textContent = ch ? ch : '_';
+      if (ch) boxes[i].classList.add('filled');
+      else boxes[i].classList.remove('filled');
+    }
+  }
+
+  function shakeDisplay() {
+    var d = $('codeDisplay');
+    d.classList.remove('shake');
+    void d.offsetWidth;
+    d.classList.add('shake');
+  }
+
+  function flashAlarm() {
+    var a = $('alarmFlash');
+    a.classList.remove('show');
+    void a.offsetWidth;
+    a.classList.add('show');
+  }
+
+  /* =========================================================
+     MODALS
+     ========================================================= */
+  function openModal(id) {
+    var m = $(id);
+    if (m) m.classList.add('show');
+  }
+  function closeModal(id) {
+    var m = $(id);
+    if (m) m.classList.remove('show');
+  }
+
+  /* =========================================================
+     ROOM LOADING
+     ========================================================= */
+  function loadRoom(n) {
+    room = genRoom(n);
+    found = [false, false, false, false];
+    entry = '';
+    mistakes = 0;
+    hintsUsed = 0;
+    solved = false;
+
+    resetScene();
+    applyTheme(room.theme);
+
+    $('roomNum').textContent = String(n);
+    $('sectorName').textContent = room.theme.name;
+
+    var hs = document.querySelectorAll('.hotspot');
+    for (var i = 0; i < hs.length; i++) hs[i].classList.remove('found');
+
+    renderDigits();
+    renderEntry();
+    closeModal('keypadModal');
+
+    setExpression('worried');
+    say(pick(OPENING_LINES));
+  }
+
+  /* =========================================================
+     HOTSPOT INTERACTION
+     ========================================================= */
+  function onHotspot(hot) {
+    if (!room || solved) return;
+
+    if (hot === 'keypad') {
+      openKeypad();
+      return;
+    }
+
+    if (room.revealed[hot]) {
+      setExpression('worried', 1500);
+      say(pick(ALREADY_LINES));
+      return;
+    }
+
+    room.revealed[hot] = true;
+
+    var node = document.querySelector('.hotspot[data-hot="' + hot + '"]');
+    if (node) node.classList.add('found');
+
+    if (hot === 'mattress') { found[0] = true; }
+    if (hot === 'poster')   { found[1] = true; }
+    if (hot === 'vent')     { found[2] = true; found[3] = true; }
+
+    renderDigits();
+    Sound.pickup();
+    setExpression('hopeful', 2400);
+    say(pick(CLUE_REACTIONS));
+    showToast(room.clueTexts[hot]);
+  }
+
+  function openKeypad() {
+    if (!room || solved) return;
+    Sound.beep();
+    entry = '';
+    renderEntry();
+    openModal('keypadModal');
+    setExpression('worried');
+  }
+
+  function pressKey(k) {
+    if (solved) return;
+    Sound.beep();
+
+    if (k === 'C') {
+      entry = '';
+      renderEntry();
+      return;
+    }
+    if (k === 'OK') {
+      submitCode();
+      return;
+    }
+    if (entry.length < 4) {
+      entry += k;
+      renderEntry();
+    }
+  }
+
+  function submitCode() {
+    if (!room || solved) return;
+
+    if (entry.length < 4) {
+      say('I need all four numbers first!');
+      Sound.error();
+      return;
+    }
+
+    if (entry === room.code) {
+      solved = true;
+      closeModal('keypadModal');
+      winRoom();
+    } else {
+      mistakes++;
+      Sound.error();
+      shakeDisplay();
+      flashAlarm();
+      setExpression('panicked', 2000);
+      say(pick(WRONG_LINES));
+      entry = '';
+      renderEntry();
+    }
+  }
+
+  /* =========================================================
+     WIN SEQUENCE
+     ========================================================= */
+  function winRoom() {
+    var n = state.current;
+    var earned = Math.max(1, 3 - mistakes - hintsUsed);
+
+    if (!state.stars[n] || state.stars[n] < earned) state.stars[n] = earned;
+    state.maxUnlocked = Math.max(state.maxUnlocked, Math.min(100, n + 1));
+    saveState();
+
+    setExpression('happy');
+    say('The lock clicked! You did it! Pull the door!');
+    Sound.rattle();
+
+    setTimeout(function () {
+      $('bars').classList.add('open');
+      $('freedomGlow').classList.add('show');
+      Sound.barsOpen();
+
+      setTimeout(function () {
+        $('elena').classList.add('free');
+        Sound.footstep();
+
+        setTimeout(function () {
+          Sound.fanfare();
+          showWin(earned);
+        }, 720);
+      }, 900);
+    }, 700);
+  }
+
+  function showWin(earned) {
+    var n = state.current;
+
+    $('winStars').textContent = '⭐'.repeat(earned) + '☆'.repeat(3 - earned);
+    $('winSub').textContent = (n >= 100) ? 'All 100 rooms cleared!' : ('Room ' + n + ' cleared');
+
+    if (n >= 100) {
+      $('winQuote').textContent = '“We did it… we are finally free. Thank you, truly.”';
+      $('nextBtn').textContent = '🏁 Finish';
+      say('We did it… we are free!');
+    } else {
+      $('winQuote').textContent = '“Thank you! Let\'s move to the next room!”';
+      $('nextBtn').textContent = 'Next Room →';
+      say("Thank you! Let's move to the next room!");
+    }
+
+    openModal('winModal');
+  }
+
+  /* =========================================================
+     ADVANCE / ADS
+     ========================================================= */
+  function goNextRoom() {
+    if (state.current >= 100) {
+      openModal('mapModal');
+      renderMap();
+      return;
+    }
+
+    var target = state.current + 1;
+
+    function advance() {
+      state.current = target;
+      saveState();
+      loadRoom(target);
+    }
+
+    if (state.current >= 5) {
+      showInterstitialAd(advance);
+    } else {
+      advance();
+    }
+  }
+
+  /* ---- simulated ad player (swap for AdsGram / Monetag SDK) ---- */
+  function playAd(seconds, label, onDone) {
+    var modal = $('adModal');
+    var countEl = $('adCount');
+    var labelEl = $('adLabel');
+    var btn = $('adCloseBtn');
+
+    labelEl.textContent = label;
+    btn.classList.add('hidden');
+    btn.textContent = (label === 'Interstitial Ad') ? 'Continue' : 'Claim Reward';
+
+    var left = seconds;
+    countEl.textContent = String(left);
+    openModal('adModal');
+
+    if (adTimer) { clearInterval(adTimer); adTimer = null; }
+
+    adTimer = setInterval(function () {
+      left--;
+      countEl.textContent = String(Math.max(0, left));
+      if (left <= 0) {
+        clearInterval(adTimer);
+        adTimer = null;
+        btn.classList.remove('hidden');
+      }
+    }, 1000);
+
+    adCallback = onDone || null;
+
+    btn.onclick = function () {
+      if (!btn.classList.contains('hidden')) {
+        btn.classList.add('hidden');
+        closeModal('adModal');
+        var cb = adCallback;
+        adCallback = null;
+        if (cb) cb();
+      }
+    };
+  }
+
+  /* =================== AD HOOKS =================== */
+  function showRewardedAdHint() {
+    /*
+      Production hook (AdsGram example):
+      if (window.AdsGram) {
+        window.AdsGram.init({ blockId: 'YOUR_BLOCK_ID' })
+          .show()
+          .then(function(){ applyHint(); })
+          .catch(function(){ applyHint(); });
+        return;
+      }
+    */
+    playAd(3, 'Rewarded Ad', function () { applyHint(); });
+  }
+
+  function showRewardedAdSkip() {
+    /*
+      Production hook (Monetag example):
+      if (window.show_XXXXXXX) {
+        window.show_XXXXXXX().then(function(){ doSkip(); });
+        return;
+      }
+    */
+    playAd(3, 'Rewarded Ad', function () { doSkip(); });
+  }
+
+  function showInterstitialAd(callback) {
+    /*
+      Production hook:
+      if (window.show_XXXXXXX) {
+        window.show_XXXXXXX().then(callback).catch(callback);
+        return;
+      }
+    */
+    playAd(3, 'Interstitial Ad', callback);
+  }
+  /* ================================================= */
+
+  function applyHint() {
+    if (!room || solved) return;
+    hintsUsed++;
+
+    var missing = [];
+    for (var i = 0; i < 4; i++) if (!found[i]) missing.push(i);
+
+    if (missing.length === 0) {
+      say('You already have all four numbers! Use the keypad!');
+      setExpression('hopeful', 1800);
+      Sound.pickup();
+      return;
+    }
+
+    var idx = missing[0];
+    found[idx] = true;
+    renderDigits();
+    Sound.pickup();
+    setExpression('hopeful', 2200);
+    say('The guard muttered it once… I think that is one of the numbers!');
+    showToast('Hint revealed: digit ' + (idx + 1) + ' is <b>' + room.digits[idx] + '</b>.');
+  }
+
+  function doSkip() {
+    if (!room || solved) return;
+    solved = true;
+
+    var n = state.current;
+    if (!state.stars[n]) state.stars[n] = 1;
+    state.maxUnlocked = Math.max(state.maxUnlocked, Math.min(100, n + 1));
+    saveState();
+
+    setExpression('hopeful');
+    say('Okay… we slipped out the back way. Let us not do that again.');
+    Sound.fanfare();
+    $('bars').classList.add('open');
+    $('freedomGlow').classList.add('show');
+
+    setTimeout(function () {
+      goNextRoom();
+    }, 1250);
+  }
+
+  /* =========================================================
+     MAP
+     ========================================================= */
+  function renderMap() {
+    var grid = $('mapGrid');
+    if (!grid) return;
+
+    var html = '';
+    for (var i = 1; i <= 100; i++) {
+      var s = state.stars[i] || 0;
+      var locked = i > state.maxUnlocked;
+      var cls = 'map-cell';
+      if (locked) cls += ' locked';
+      if (s > 0) cls += ' done';
+      if (i === state.current) cls += ' current';
+
+      var stars = locked ? '🔒' : ('⭐'.repeat(s) + '☆'.repeat(3 - s));
+
+      html += '<button class="' + cls + '" data-room="' + i + '"' +
+              (locked ? ' disabled' : '') + '>' +
+              '<span class="mc-num">' + i + '</span>' +
+              '<span class="mc-stars">' + stars + '</span>' +
+              '</button>';
+    }
+    grid.innerHTML = html;
+
+    setTimeout(function () {
+      var cur = grid.querySelector('.map-cell.current');
+      if (cur && cur.scrollIntoView) {
+        try { cur.scrollIntoView({ block: 'center' }); } catch (e) {}
+      }
+    }, 40);
+  }
+
+  /* =========================================================
+     SHARE
+     ========================================================= */
+  function shareRescue() {
+    var n = state.current;
+    var text = 'I just freed Elena from Room ' + n +
+               ' of Save Elena: Prison Break! Can you unlock all 100 prison rooms? 🔓';
+    var shareUrl = 'https://t.me/share/url?url=' +
+                   encodeURIComponent('https://t.me/share/url') +
+                   '&text=' + encodeURIComponent(text);
+
+    try {
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(shareUrl);
+        return;
+      }
+    } catch (e) {}
+    window.open(shareUrl, '_blank');
+  }
+
+  /* =========================================================
+     EVENTS
+     ========================================================= */
+  function bindEvents() {
+    /* --- audio unlock --- */
+    function unlock() {
+      Sound.init();
+      document.removeEventListener('pointerdown', unlock);
+      document.removeEventListener('keydown', unlock);
+    }
+    document.addEventListener('pointerdown', unlock);
+    document.addEventListener('keydown', unlock);
+
+    /* --- mute --- */
+    $('muteBtn').addEventListener('click', function () {
+      Sound.init();
+      Sound.muted = !Sound.muted;
+      state.muted = Sound.muted;
+      saveState();
+      this.textContent = Sound.muted ? '🔇' : '🔊';
+      if (!Sound.muted) Sound.beep();
+    });
+
+    /* --- map --- */
+    $('mapBtn').addEventListener('click', function () {
+      Sound.init();
+      Sound.beep();
+      renderMap();
+      openModal('mapModal');
+    });
+    $('mapClose').addEventListener('click', function () {
+      closeModal('mapModal');
+    });
+
+    $('mapGrid').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.map-cell') : null;
+      if (!btn || btn.disabled) return;
+      var n = parseInt(btn.getAttribute('data-room'), 10);
+      if (isNaN(n) || n > state.maxUnlocked) return;
+
+      Sound.beep();
+      closeModal('mapModal');
+      state.current = n;
+      saveState();
+      loadRoom(n);
+    });
+
+    /* --- rewarded ads --- */
+    $('hintBtn').addEventListener('click', function () {
+      Sound.init();
+      Sound.beep();
+      if (solved) return;
+      showRewardedAdHint();
+    });
+
+    $('skipBtn').addEventListener('click', function () {
+      Sound.init();
+      Sound.beep();
+      if (solved) return;
+      showRewardedAdSkip();
+    });
+
+    /* --- scene hotspots --- */
+    var scene = $('scene');
+    scene.addEventListener('click', function (e) {
+      Sound.init();
+      var t = e.target;
+      var hs = (t && t.closest) ? t.closest('.hotspot') : null;
+
+      if (hs) {
+        var hot = hs.getAttribute('data-hot');
+        if (hot) onHotspot(hot);
+        return;
+      }
+
+      /* Elena / background tap reaction */
+      var now = Date.now();
+      if (now - lastIdle > 2600 && !solved) {
+        lastIdle = now;
+        setExpression('worried', 1600);
+        say(pick(IDLE_LINES));
+      }
+    });
+
+    /* --- dock keypad button --- */
+    $('openKeypadBtn').addEventListener('click', function () {
+      Sound.init();
+      openKeypad();
+    });
+
+    /* --- keypad pad --- */
+    $('keypadPad').addEventListener('click', function (e) {
+      var t = e.target;
+      var btn = (t && t.closest) ? t.closest('.key') : null;
+      if (!btn) return;
+      var k = btn.getAttribute('data-k');
+      if (k) pressKey(k);
+    });
+
+    $('kpClose').addEventListener('click', function () {
+      closeModal('keypadModal');
+    });
+
+    /* --- victory --- */
+    $('nextBtn').addEventListener('click', function () {
+      Sound.beep();
+      closeModal('winModal');
+      if (state.current >= 100) {
+        renderMap();
+        openModal('mapModal');
+        return;
+      }
+      goNextRoom();
+    });
+
+    $('shareBtn').addEventListener('click', function () {
+      Sound.beep();
+      shareRescue();
+    });
+
+    /* --- keyboard support (desktop) --- */
+    document.addEventListener('keydown', function (e) {
+      if (!$('keypadModal').classList.contains('show')) return;
+      if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+      else if (e.key === 'Backspace') pressKey('C');
+      else if (e.key === 'Enter') pressKey('OK');
+    });
+  }
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
+  function init() {
+    loadState();
+
+    Sound.muted = state.muted;
+    $('muteBtn').textContent = state.muted ? '🔇' : '🔊';
+
+    bindEvents();
+    loadRoom(state.current);
+
+    /* safety: make sure no stray ad modal stays open */
+    closeModal('adModal');
+    closeModal('winModal');
+    closeModal('mapModal');
+    closeModal('keypadModal');
+  }
+
+  init();
 });
-
-function tap(i) {
-  const o = cur.O[i]; A();
-  if (o.lock && !o.open) {
-    if (o.lock.item) {
-      const it = inv[sel];
-      if (!it) { sfx.rattle(); shake(i); return msg(`Locked. Tap an item in your inventory to equip it, then tap ${o.name}.`); }
-      if (it.name !== o.lock.item) { sfx.rattle(); shake(i); return msg(`The ${it.name} doesn't work on ${o.name}.`); }
-      inv.splice(sel, 1); sel = -1; sfx.pick(); return unlock(o);
-    }
-    sfx.click(); return keypad(o, i);
-  }
-  sfx.click(); reveal(o);
-}
-function unlock(o) {
-  o.open = 1;
-  if (o.door) return win();
-  msg(`${o.name} unlocked!`); reveal(o);
-}
-function reveal(o) {
-  if (o.clue) { modal(`<h3>${o.icon} ${o.name}</h3><p>${o.clue}</p>`, [["Close"]]); msg("Remember this clue. Tap it again anytime."); }
-  else if (o.give && !o.taken) {
-    if (inv.length >= 3) { sfx.err(); return msg("Inventory full."); }
-    o.taken = 1; inv.push(o.give); sfx.pick(); msg(`Found ${o.give.icon} ${o.give.name}! Tap it below to equip.`);
-  } else if (o.give) msg("It's empty now.");
-  else msg(o.txt || "Nothing here.");
-  render();
-}
-function keypad(o, i) {
-  let c = "";
-  const show = () => { $("#disp").textContent = [0, 1, 2, 3].map(k => c[k] || "_").join(" "); };
-  modal(`<h3>${o.icon} ${o.name}</h3><div id="disp">_ _ _ _</div><div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, "⌫", 0, "✕"].map(k => `<button data-k="${k}">${k}</button>`).join("")}</div>`, []);
-  $("#mod").onclick = e => {
-    const b = e.target.closest("[data-k]"); if (!b) return;
-    const k = b.dataset.k;
-    if (k === "✕") { sfx.click(); return closeModal(); }
-    if (k === "⌫") { sfx.click(); c = c.slice(0, -1); return show(); }
-    if (c.length >= 4) return;
-    c += k; sfx.beep(+k); show();
-    if (c.length === 4) setTimeout(() => {
-      if (c === o.lock.code) { closeModal(); sfx.pick(); unlock(o); }
-      else { run.wrong++; sfx.err(); c = ""; show(); const d = $("#disp"); if (d) { d.classList.add("shake"); d.addEventListener("animationend", () => d.classList.remove("shake"), { once: true }); } msg("Wrong code. The lock stays shut."); }
-    }, 180);
-  };
-}
-
-const bar = x => "⭐".repeat(x) + "☆".repeat(3 - x);
-function starsFor() { return run.skip || run.wrong >= 3 ? 1 : run.hint || run.wrong ? 2 : 3; }
-function finishRoom(n) { // records best stars, unlocks the next room, saves
-  const s = starsFor(), prev = ST[n] || 0;
-  if (s > prev) { ST[n] = s; saveStars(); }
-  S.max = Math.max(S.max, Math.min(100, n + 1)); S.room = Math.min(100, n + 1); save();
-  return { s, best: Math.max(s, prev) };
-}
-function win() {
-  const n = cur.n, last = n >= 100, r = finishRoom(n);
-  sfx.win();
-  modal(`<h2>${last ? "🏆 You escaped!" : `🔓 Room ${n} cleared!`}</h2>
-    <div style="font-size:34px;margin:2px 0 10px">${bar(r.s)}</div>
-    <p>${last ? "All 100 rooms cleared. Freedom is yours." : `You slip through the ${cur.O.find(o => o.door).name} and move on.`}</p>
-    <p style="font-size:13px;color:var(--dm)">${r.s === 3 ? "Flawless: no wrong codes, no hints." : `Best: ${bar(r.best)}. Replay for 3 stars with no wrong codes and no hints.`}</p>`,
-    [["📢 Challenge Friends", () => shareChallenge(n, last, r.s), 0, 1],
-     ["🔁 Replay Room", () => start(n)],
-     last ? ["🗺️ Levels", openLevels, 1] : ["Next Room ▶", () => nextRoom(n), 1]], true);
-  hap("success");
-}
-function shareChallenge(n, last, st) {
-  const text = last ? `🏆 I escaped all 100 rooms of Prison Escape! Think you can do it?` : `🔓 I cleared Room ${n} of Prison Escape: 100 Rooms with ${bar(st)}! Can you beat me?`;
-  const u = "https://t.me/share/url?url=" + encodeURIComponent(APP_URL) + "&text=" + encodeURIComponent(text);
-  try { if (tg && tg.initData) return tg.openTelegramLink(u); } catch (e) {}
-  window.open(u, "_blank");
-}
-function openLevels() {
-  sfx.click();
-  const total = Object.values(ST).reduce((a, b) => a + b, 0), cells = [];
-  for (let i = 1; i <= 100; i++) {
-    if (i > S.max) { cells.push(`<div class="lc lock"><b>${i}</b><span>🔒</span></div>`); continue; }
-    const s = ST[i] || 0;
-    cells.push(`<button class="lc${i === cur.n ? " cur" : ""}" data-r="${i}"><b>${i}</b><span><i>${"★".repeat(s)}</i>${"☆".repeat(3 - s)}</span></button>`);
-  }
-  modal(`<div class="mh"><div><h3>🗺️ Levels</h3><p>Total Stars: <b>${total} / 300 ⭐</b></p></div><button class="hb" data-x="1">✕</button></div><div class="lvw"><div class="lv">${cells.join("")}</div></div>`, []);
-  $("#mod").className = "mod map";
-  $("#mod").onclick = e => {
-    if (e.target.closest("[data-x]")) { sfx.click(); return closeModal(); }
-    const c = e.target.closest("[data-r]"); if (!c) return;
-    const n = +c.dataset.r; sfx.click(); closeModal(); if (n !== cur.n) start(n); // tap an unlocked room to (re)play it
-  };
-  const c = $("#mod .cur"); if (c) c.scrollIntoView({ block: "center" });
-}
-
-/* ---------- Monetization: rewarded ad hint ---------- */
-async function showRewardedAdHint() {
-  sfx.click();
-  try {
-    /* ====== PASTE YOUR REWARDED-AD SDK TRIGGER HERE ======
-       AdsGram:  const AdController = window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" });
-                 await AdController.show();          // resolves when the ad is watched, rejects if skipped
-       Monetag:  await show_YOUR_ZONE_ID();           // resolves after the rewarded ad completes
-       Remove the line below once a real ad SDK is wired in. */
-    await Promise.resolve();
-  } catch (err) { return msg("Ad not completed. Watch the full ad to unlock the hint."); }
-  run.hint++; // counts toward the star rating
-  modal(`<h3>💡 Solution</h3><ol>${cur.st.map(s => `<li>${s}</li>`).join("")}</ol>`, [["Got it"]]);
-}
-/* ---------- Monetization: interstitial after Room 5 + rewarded skip ---------- */
-const AD_FREE_ROOMS = 5; // clearing Rooms 1-5 never shows an interstitial
-
-function nextRoom(cleared) {
-  const go = () => start(Math.min(100, cleared + 1));
-  if (cleared > AD_FREE_ROOMS) showInterstitialAd(go); // Room 6 onward
-  else go();
-}
-function showInterstitialAd(callback) {
-  /* ====== PASTE YOUR INTERSTITIAL AD SDK TRIGGER HERE ======
-     AdsGram:  const AdController = window.Adsgram.init({ blockId: "int-YOUR_BLOCK_ID" });
-               AdController.show().then(() => callback()).catch(() => callback()); // continue even if the ad fails
-               return;
-     Monetag:  show_YOUR_ZONE_ID().then(() => callback()).catch(() => callback());
-               return;
-     Delete the line below once a real ad SDK is wired in. */
-  callback(); // testing mode: skip straight to the next room
-}
-
-function confirmSkip() {
-  sfx.click();
-  const n = cur.n;
-  modal(`<h3>⏭️ Skip Room ${n}?</h3><p>Watch a short ad to skip Room ${n}?</p><p style="font-size:13px;color:var(--dm)">Skipping earns 1 ⭐ for this room.</p>`,
-    [["▶ Watch Ad", () => showRewardedAdSkip(skipRoom), 1], ["Cancel"]]);
-}
-function showRewardedAdSkip(callback) {
-  /* ====== PASTE YOUR REWARDED AD SDK TRIGGER HERE ======
-     AdsGram:  const AdController = window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" });
-               AdController.show().then(() => callback())
-                 .catch(() => msg("Ad not completed. Watch the full ad to skip the room."));
-               return;
-     Monetag:  show_YOUR_ZONE_ID().then(() => callback())
-                 .catch(() => msg("Ad not completed. Watch the full ad to skip the room."));
-               return;
-     Only call callback() after the ad is fully watched (the reward).
-     Delete the line below once a real ad SDK is wired in. */
-  callback(); // testing mode: grant the skip immediately
-}
-function skipRoom() {
-  const n = cur.n; run.skip = 1;
-  if (n >= 100) return win();                 // skipping the final room completes the game
-  finishRoom(n); sfx.win(); start(n + 1);     // 1 star saved, next room unlocked and saved
-  msg(`⏭️ Room ${n} skipped (1 ⭐). ${cur.intro}`);
-}
-$("#lv").addEventListener("click", openLevels);
-$("#skip").addEventListener("click", confirmSkip);
-$("#hint").addEventListener("click", showRewardedAdHint);
-$("#mute").addEventListener("click", () => { S.mute = S.mute ? 0 : 1; save(); render(); if (!S.mute) sfx.click(); });
-
-start(S.room);
 </script>
 </body>
 </html>
