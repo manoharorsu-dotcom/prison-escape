@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#07080c">
 <title>Save Elena: Prison Break</title>
+<script src="https://libtl.com/sdk.js" data-zone="12321503" data-sdk="show_12321503"></script>
 <style>
   :root{
     --gold:#ffc95a;
@@ -84,11 +85,16 @@
 
   /* hotspots */
   .hotspot{cursor:pointer;}
-  .hotspot:not(.found){animation:hsPulse 2.6s ease-in-out infinite;}
-  .hotspot.found{opacity:.45;animation:none;}
+  .hotspot:not(.found):not(.locked-hs){animation:hsPulse 2.6s ease-in-out infinite;}
+  .hotspot.found{opacity:.5;animation:none;}
+  .hotspot.locked-hs{animation:hsShake 3.2s ease-in-out infinite;}
   @keyframes hsPulse{
     0%,100%{filter:drop-shadow(0 0 0 rgba(255,201,90,0));}
     50%{filter:drop-shadow(0 0 8px rgba(255,201,90,.9));}
+  }
+  @keyframes hsShake{
+    0%,88%,100%{filter:drop-shadow(0 0 0 rgba(255,120,80,0));}
+    92%,96%{filter:drop-shadow(0 0 9px rgba(255,120,80,.95));}
   }
 
   /* bars */
@@ -117,7 +123,7 @@
   }
   #bubble{
     position:relative;
-    max-width:310px;
+    max-width:315px;
     background:rgba(11,14,20,.94);
     border:1.5px solid rgba(255,201,90,.5);
     border-radius:14px;
@@ -176,7 +182,7 @@
   /* ================= DOCK ================= */
   #dock{
     flex:0 0 auto;
-    display:flex;align-items:center;gap:9px;
+    display:flex;align-items:center;gap:8px;
     padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px);
     background:linear-gradient(0deg,#131822,#0a0d13);
     border-top:1px solid rgba(255,201,90,.2);
@@ -187,12 +193,12 @@
     font-weight:800;writing-mode:vertical-rl;transform:rotate(180deg);
     flex:0 0 auto;
   }
-  .digits{display:flex;gap:6px;flex:1 1 auto;justify-content:center;}
+  .digits{display:flex;gap:5px;flex:1 1 auto;justify-content:center;}
   .slot{
-    width:36px;height:36px;border-radius:9px;
+    width:32px;height:36px;border-radius:9px;
     display:flex;align-items:center;justify-content:center;
     background:#151b25;border:1.5px solid #2c3546;
-    font-size:17px;font-weight:800;color:#5d6879;
+    font-size:16px;font-weight:800;color:#5d6879;
     transition:all .25s ease;
   }
   .slot.on{
@@ -201,9 +207,36 @@
     color:var(--gold);
     box-shadow:0 0 14px rgba(255,201,90,.35);
   }
+  #toolSlot{
+    width:38px;height:38px;border-radius:10px;
+    background:#141b26;border:1.5px dashed #2c3546;
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;cursor:pointer;flex:0 0 auto;
+    transition:all .2s ease;position:relative;
+  }
+  #toolSlot.empty{opacity:.45;font-size:13px;color:#4d5668;}
+  #toolSlot.equipped{
+    border-style:solid;
+    border-color:var(--gold);
+    background:linear-gradient(180deg,#2a2311,#1a1509);
+    box-shadow:0 0 16px rgba(255,201,90,.55);
+    animation:toolGlow 1.6s ease-in-out infinite;
+  }
+  @keyframes toolGlow{
+    0%,100%{box-shadow:0 0 10px rgba(255,201,90,.4);}
+    50%{box-shadow:0 0 20px rgba(255,201,90,.9);}
+  }
+  #toolSlot .badge{
+    position:absolute;top:-4px;right:-4px;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--gold);color:#1a1509;
+    font-size:9px;font-weight:900;
+    display:none;align-items:center;justify-content:center;
+  }
+  #toolSlot.equipped .badge{display:flex;}
   #openKeypadBtn{
     flex:0 0 auto;
-    height:36px;padding:0 13px;border-radius:9px;
+    height:38px;padding:0 12px;border-radius:10px;
     background:linear-gradient(180deg,#2b3547,#1a212d);
     border:1px solid #3b465c;color:#dbe3f0;
     font-size:16px;cursor:pointer;transition:transform .12s;
@@ -359,6 +392,23 @@
   .ad-sub{font-size:11px;color:#6f7b8e;margin-top:4px;}
 
   .hidden{display:none !important;}
+
+  /* tool toast */
+  #toolToast{
+    position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%) scale(.6);
+    background:rgba(9,11,17,.96);
+    border:1.5px solid var(--gold);
+    border-radius:14px;
+    padding:12px 18px;
+    font-size:13px;color:#f2e7d3;
+    opacity:0;pointer-events:none;z-index:7;
+    transition:all .35s cubic-bezier(.2,1.4,.4,1);
+    box-shadow:0 0 34px rgba(255,201,90,.55);
+    text-align:center;font-weight:700;
+  }
+  #toolToast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  #toolToast .ti{font-size:26px;display:block;margin-bottom:4px;}
 </style>
 </head>
 <body>
@@ -408,7 +458,7 @@
           <stop offset="52%" stop-color="rgba(0,0,0,0)"/>
           <stop offset="100%" stop-color="rgba(0,0,0,0.74)"/>
         </radialGradient>
-        <radialGradient id="freedomGlow" cx="50%" cy="45%" r="55%">
+        <radialGradient id="freedomGlowGrad" cx="50%" cy="45%" r="55%">
           <stop offset="0%" stop-color="rgba(255,245,200,0.95)"/>
           <stop offset="60%" stop-color="rgba(255,220,140,0.35)"/>
           <stop offset="100%" stop-color="rgba(255,220,140,0)"/>
@@ -456,8 +506,8 @@
       <!-- LAMP WASH -->
       <rect x="0" y="0" width="400" height="560" fill="url(#lampGlow)" pointer-events="none"/>
 
-      <!-- POSTER HOTSPOT -->
-      <g class="hotspot" data-hot="poster">
+      <!-- ============ HOTSPOT: POSTER ============ -->
+      <g class="hotspot" data-hot="poster" id="hsPoster">
         <rect x="44" y="150" width="72" height="96" rx="3" fill="#cbbd9d"/>
         <rect x="44" y="150" width="72" height="96" rx="3" fill="none" stroke="#7a6a4a" stroke-width="2"/>
         <rect x="52" y="160" width="56" height="9" rx="2" fill="#8a7a58" opacity="0.5"/>
@@ -465,10 +515,18 @@
         <rect x="52" y="188" width="50" height="6" rx="2" fill="#8a7a58" opacity="0.4"/>
         <circle cx="80" cy="217" r="14" fill="#b0a184" opacity="0.55"/>
         <path d="M44 246 L116 226 L116 246 Z" fill="#000" opacity="0.16"/>
+        <!-- grime overlay for mirror-lock -->
+        <g id="posterGrime" opacity="0">
+          <rect x="44" y="150" width="72" height="96" rx="3" fill="#6b6250" opacity="0.85"/>
+          <circle cx="60" cy="180" r="9" fill="#514a3c" opacity="0.8"/>
+          <circle cx="95" cy="200" r="12" fill="#514a3c" opacity="0.8"/>
+          <circle cx="70" cy="225" r="8" fill="#514a3c" opacity="0.8"/>
+          <path d="M44 246 L116 246 L116 240 L44 240 Z" fill="#3d382d" opacity="0.9"/>
+        </g>
       </g>
 
-      <!-- VENT HOTSPOT -->
-      <g class="hotspot" data-hot="vent">
+      <!-- ============ HOTSPOT: VENT ============ -->
+      <g class="hotspot" data-hot="vent" id="hsVent">
         <rect x="284" y="148" width="70" height="50" rx="4" fill="#20242a"/>
         <rect x="284" y="148" width="70" height="50" rx="4" fill="none" stroke="#5b636e" stroke-width="2"/>
         <g stroke="#4d545e" stroke-width="2.6" stroke-linecap="round">
@@ -477,14 +535,23 @@
           <line x1="291" y1="175" x2="347" y2="175"/>
           <line x1="291" y1="184" x2="347" y2="184"/>
         </g>
-        <circle cx="289" cy="153" r="2.2" fill="#9aa3af"/>
-        <circle cx="349" cy="153" r="2.2" fill="#9aa3af"/>
-        <circle cx="289" cy="193" r="2.2" fill="#9aa3af"/>
-        <circle cx="349" cy="193" r="2.2" fill="#9aa3af"/>
+        <!-- screws -->
+        <g id="ventScrews">
+          <circle cx="289" cy="153" r="2.6" fill="#9aa3af"/>
+          <circle cx="349" cy="153" r="2.6" fill="#9aa3af"/>
+          <circle cx="289" cy="193" r="2.6" fill="#9aa3af"/>
+          <circle cx="349" cy="193" r="2.6" fill="#9aa3af"/>
+        </g>
+        <!-- padlock -->
+        <g id="ventPadlock" opacity="0">
+          <rect x="311" y="168" width="16" height="13" rx="2.5" fill="#c8963e"/>
+          <path d="M314 168 v-4 a5 5 0 0 1 10 0 v4" fill="none" stroke="#c8963e" stroke-width="2.6"/>
+          <circle cx="319" cy="174" r="1.8" fill="#3a2a0a"/>
+        </g>
       </g>
 
-      <!-- KEYPAD HOTSPOT -->
-      <g class="hotspot" data-hot="keypad">
+      <!-- ============ HOTSPOT: KEYPAD ============ -->
+      <g class="hotspot" data-hot="keypad" id="hsKeypad">
         <rect x="298" y="320" width="70" height="100" rx="7" fill="#171b21" stroke="#4d545e" stroke-width="2"/>
         <rect x="306" y="328" width="54" height="20" rx="3" fill="#07160e" stroke="#2c5c3e" stroke-width="1.6"/>
         <text x="333" y="343" font-family="monospace" font-size="14" fill="#4dff9a" text-anchor="middle" letter-spacing="2">----</text>
@@ -501,8 +568,8 @@
         </g>
       </g>
 
-      <!-- MATTRESS HOTSPOT -->
-      <g class="hotspot" data-hot="mattress">
+      <!-- ============ HOTSPOT: MATTRESS ============ -->
+      <g class="hotspot" data-hot="mattress" id="hsMattress">
         <rect x="24" y="450" width="134" height="54" rx="16" fill="#4e453a"/>
         <rect x="24" y="450" width="134" height="54" rx="16" fill="none" stroke="#2a241c" stroke-width="2.5"/>
         <g stroke="#3b342b" stroke-width="5" stroke-linecap="round">
@@ -514,51 +581,39 @@
         <circle cx="75" cy="473" r="4.5" fill="none" stroke="#9aa3af" stroke-width="1.6"/>
       </g>
 
-      <!-- ELENA -->
+      <!-- ============ ELENA ============ -->
       <g id="elena">
         <ellipse cx="200" cy="510" rx="44" ry="9" fill="rgba(0,0,0,0.45)"/>
         <g id="elenaFigure">
-          <!-- legs -->
           <rect x="186" y="437" width="12" height="66" rx="6" fill="#3b4150"/>
           <rect x="202" y="437" width="12" height="66" rx="6" fill="#3b4150"/>
-          <!-- shoes -->
           <rect x="181" y="493" width="22" height="14" rx="5" fill="#23262e"/>
           <rect x="197" y="493" width="22" height="14" rx="5" fill="#23262e"/>
-          <!-- dress -->
           <path d="M200 355 L172 445 Q200 457 228 445 Z" fill="#6d80a8"/>
           <path d="M200 355 L172 445 Q200 457 228 445 Z" fill="none" stroke="#48587a" stroke-width="2"/>
           <rect x="180" y="385" width="40" height="7" rx="3.5" fill="#3c4a66"/>
-          <!-- arms -->
           <rect x="167" y="363" width="12" height="64" rx="6" fill="#f2c9a4"/>
           <rect x="221" y="363" width="12" height="64" rx="6" fill="#f2c9a4"/>
           <circle cx="173" cy="429" r="7.5" fill="#f7d2b0"/>
           <circle cx="227" cy="429" r="7.5" fill="#f7d2b0"/>
-          <!-- neck -->
           <rect x="193" y="341" width="14" height="18" fill="#e0ab86"/>
-          <!-- hair back -->
           <ellipse cx="200" cy="325" rx="31" ry="33" fill="#2b1f1a"/>
-          <!-- face -->
           <circle cx="200" cy="327" r="25" fill="#f7d2b0"/>
-          <!-- bangs -->
           <path d="M175 319 Q200 295 225 319 Q217 305 200 303 Q183 305 175 319 Z" fill="#2b1f1a"/>
-          <!-- eyes -->
           <ellipse cx="190" cy="329" rx="3.4" ry="4.2" fill="#20242c"/>
           <ellipse cx="210" cy="329" rx="3.4" ry="4.2" fill="#20242c"/>
           <circle cx="191.2" cy="327.5" r="1.3" fill="#fff" opacity="0.9"/>
           <circle cx="211.2" cy="327.5" r="1.3" fill="#fff" opacity="0.9"/>
-          <!-- brows -->
           <path id="browL" d="M183 321 L196 321" stroke="#2b1f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
           <path id="browR" d="M204 321 L217 321" stroke="#2b1f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-          <!-- mouth -->
           <path id="mouth" d="M191 343 Q200 338 209 343" stroke="#a34b4b" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-          <!-- blush -->
           <ellipse cx="182" cy="337" rx="5" ry="3" fill="#e88b8b" opacity="0.35"/>
           <ellipse cx="218" cy="337" rx="5" ry="3" fill="#e88b8b" opacity="0.35"/>
         </g>
       </g>
 
       <!-- FREEDOM GLOW -->
-      <ellipse id="freedomGlow" cx="200" cy="320" rx="185" ry="250" fill="url(#freedomGlow)" pointer-events="none"/>
+      <ellipse id="freedomGlow" cx="200" cy="320" rx="185" ry="250" fill="url(#freedomGlowGrad)" pointer-events="none"/>
 
       <!-- PRISON BARS -->
       <g id="bars" pointer-events="none">
@@ -586,6 +641,7 @@
     </div>
 
     <div id="clueToast"></div>
+    <div id="toolToast"></div>
     <div id="alarmFlash"></div>
   </main>
 
@@ -598,6 +654,7 @@
       <div class="slot">?</div>
       <div class="slot">?</div>
     </div>
+    <button id="toolSlot" class="empty" aria-label="Tool slot">—</button>
     <button id="openKeypadBtn" aria-label="Open keypad">🔐</button>
   </footer>
 </div>
@@ -688,7 +745,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* =========================================================
-     SOUND ENGINE (Web Audio API)
+     SOUND ENGINE
      ========================================================= */
   var Sound = {
     ctx: null,
@@ -751,6 +808,16 @@ document.addEventListener('DOMContentLoaded', function () {
       this.tone(990, 0.14, 'sine', 0.12, 0.09);
       this.tone(1320, 0.20, 'sine', 0.10, 0.18);
     },
+    unlock: function () {
+      this.noise(0.28, 0.18, 0, 800);
+      this.tone(300, 0.16, 'square', 0.12, 0.05);
+      this.tone(520, 0.22, 'triangle', 0.14, 0.18);
+      this.tone(760, 0.28, 'sine', 0.10, 0.32);
+    },
+    wipe: function () {
+      this.noise(0.5, 0.16, 0, 2200);
+      this.noise(0.35, 0.10, 0.18, 1400);
+    },
     error: function () {
       this.tone(190, 0.18, 'sawtooth', 0.16);
       this.tone(120, 0.30, 'sawtooth', 0.14, 0.14);
@@ -790,65 +857,252 @@ document.addEventListener('DOMContentLoaded', function () {
     { name: 'Final Gate',    wall1: '#342a16', wall2: '#100d05', floor1: '#251d0f', floor2: '#090701' }
   ];
 
-  var CLUES = {
+  /* Tools with emoji + name + which lock they open */
+  var TOOLS = {
+    screwdriver: { emoji: '🪛', name: 'Screwdriver', opens: 'vent',    verb: 'unscrew the vent grate' },
+    key:         { emoji: '🔑', name: 'Rusty Key',   opens: 'box',     verb: 'unlock the wooden box' },
+    crowbar:     { emoji: '🪝', name: 'Crowbar',     opens: 'brick',   verb: 'pry the loose brick' },
+    flashlight:  { emoji: '🔦', name: 'UV Flashlight', opens: 'dark',  verb: 'light the dark corner' },
+    hammer:      { emoji: '🔨', name: 'Hammer',      opens: 'brick',   verb: 'smash the brick loose' },
+    rag:         { emoji: '🧽', name: 'Rag',         opens: 'mirror',  verb: 'wipe the dusty mirror' }
+  };
+
+  var TOOL_KEYS = Object.keys(TOOLS);
+
+  /* Each lock type has a target hotspot + which tools can open it */
+  var LOCKS = {
+    vent:    { tools: ['screwdriver'], label: 'Vent Grate',   emoji: '🔩', hint: 'That vent is screwed tight—find something to unscrew it!' },
+    box:     { tools: ['key'],         label: 'Wooden Box',   emoji: '📦', hint: 'A locked wooden box—maybe a key is hidden around here.' },
+    brick:   { tools: ['crowbar', 'hammer'], label: 'Loose Brick', emoji: '🧱', hint: 'A loose brick behind the poster. You need something to pry it.' },
+    dark:    { tools: ['flashlight'],  label: 'Dark Corner',  emoji: '🌑', hint: 'It is too dark to see! Find a light source first.' },
+    mirror:  { tools: ['rag'],         label: 'Dusty Mirror', emoji: '🪞', hint: 'This mirror is caked in grime—find something to wipe it clean.' }
+  };
+
+  /* Clue text templates keyed by which digits they reveal */
+  var CLUE_TEMPLATES = {
     mattress: [
-      'You heave the torn mattress aside. Carved into the bed frame: <b>{d0}</b> — the 1st number!',
-      'A spring is loose. Wrapped around it, a paper scrap reads: 1st = <b>{d0}</b>.',
-      'Under the mattress, a nail scratch: <b>{d0}</b>. That is the first digit!'
+      'You flip the torn mattress. A nail-scratch reads: <b>{d0}</b> — the 1st digit!',
+      'Under the mattress springs, a paper scrap: 1st number = <b>{d0}</b>.',
+      'A loose spring has a tag: <b>{d0}</b>. That is the first digit!'
     ],
     poster: [
-      'You peel back the poster. Painted on the wall: <b>{d1}</b> — the 2nd number.',
-      'Behind the poster corner, a faded scrawl. 2nd digit = <b>{d1}</b>.',
-      'The poster hides a message: “Second number <b>{d1}</b>”.'
+      'You peel the poster back. Painted on the wall: <b>{d1}</b> — the 2nd digit.',
+      'Behind the poster, faded writing. 2nd digit = <b>{d1}</b>.',
+      'A message hides under the poster: second number <b>{d1}</b>.'
     ],
     vent: [
-      'You wrench the grate open. Two numbers scratched inside: <b>{d2}</b> and <b>{d3}</b>.',
-      'The vent is loose. Inside, chalk marks: <b>{d2}</b> … <b>{d3}</b>. The last two digits!',
-      'Dust falls as the grate opens. Etched into the metal: <b>{d2}{d3}</b> — digits 3 and 4.'
+      'The vent open. Chalk marks inside: <b>{d2}{d3}</b> — digits 3 and 4!',
+      'Inside the vent, scratched metal: <b>{d2}</b> … <b>{d3}</b>. The last two digits!',
+      'Dust falls out. Etched: <b>{d2}{d3}</b>. We have all four now!'
+    ],
+    box: [
+      'The box creaks open. A folded note inside: <b>{d0}{d1}</b> — digits 1 and 2!',
+      'Inside the wooden box: “<b>{d0}{d1}</b>”. The first two numbers!',
+      'The lid lifts. A brass tag reads <b>{d0}{d1}</b>. Got the first two!'
+    ],
+    brick: [
+      'The brick slides out. Behind it: <b>{d1}</b> — the 2nd digit!',
+      'A cavity behind the brick. Painted number: <b>{d1}</b>.',
+      'Something glints inside. The 2nd digit is <b>{d1}</b>.'
+    ],
+    dark: [
+      'The UV light reveals glowing marks: <b>{d2}</b> and <b>{d3}</b>. Digits 3 and 4!',
+      'Under UV, glowing ink reads: <b>{d2}{d3}</b>. The last two digits!',
+      'The dark corner lights up with: <b>{d2}</b> … <b>{d3}</b>. Almost there!'
+    ],
+    mirror: [
+      'You wipe the grime. Scratched in the glass: <b>{d1}</b> — the 2nd digit.',
+      'The mirror clears. Written backwards, it reads <b>{d1}</b>.',
+      'Under the dust, a fingernail engraving: <b>{d1}</b>. The second number!'
+    ],
+    keypad: [
+      'You found all the numbers! Now open the keypad.',
+      'We have the code — enter it on the keypad!'
     ]
   };
 
-  var OPENING_LINES = [
-    'Please… you are my only hope. Find the four numbers and open that door!',
-    'They move me again at dawn. We have to do this tonight!',
-    'I heard the guard punch a code. Search the cell — the numbers must be here!',
-    'The bars are old but the lock is new. We need that four-digit code!',
-    'Every second counts. Please, look around the cell!'
-  ];
+  /* Room-config generator: rotates lock types so every room is fresh */
+  function genRoom(n) {
+    var rnd = mulberry32(n * 7919 + 104729);
+    var digits = [];
+    for (var i = 0; i < 4; i++) digits.push(Math.floor(rnd() * 10));
 
-  var IDLE_LINES = [
-    'Hurry… I can hear the guards down the hall.',
-    'The keypad is on the wall to the right. Find the code first!',
-    'Search everything — the mattress, the poster, the vent…',
-    'If the alarm goes off, they will come running.',
-    'I believe in you. Just a little longer.'
-  ];
+    var sector = Math.min(9, Math.floor((n - 1) / 10));
+    var theme = THEMES[sector];
 
-  var CLUE_REACTIONS = [
-    "Yes! That's one of the numbers!",
-    'Keep going — we are close!',
-    'I knew you would find it!',
-    'Perfect! Remember it!',
-    'That is it! Look for the rest!'
-  ];
+    /*
+      Room archetypes:
+       0 — Mattress(free) + Vent(screwdriver) + Poster(free)   → digits: 0,1,2,3
+       1 — Mattress(free) + Box(key) + Poster(free)            → digits: 0,1,2,3
+       2 — Poster(free) + Brick(crowbar/hammer) + Mattress(free)→ digits: 0,1,2,3
+       3 — Mattress(free) + Dark(flashlight) + Poster(free)    → digits: 0,1,2,3
+       4 — Poster(free) + Mirror(rag) + Mattress(free)         → digits: 0,1,2,3
+       5 — Mattress(free) + Vent(screwdriver) + Box(key)       → digits: 0,1,2,3
+       6 — Poster(free) + Brick(hammer) + Dark(flashlight)     → digits: 0,1,2,3
+    */
 
-  var WRONG_LINES = [
-    "No! That's wrong — the alarm will wake the guards!",
-    'Wait, wait — that is not it. Try again!',
-    'Shhh! That was not the code!',
-    'The light flashed red… please be careful!'
-  ];
+    // choose archetype deterministically per room
+    var archetype = n % 7;
 
-  var ALREADY_LINES = [
-    'I already checked there…',
-    'Nothing else in that spot.',
-    'We searched that already. Look elsewhere!'
-  ];
+    // free spots (no lock)
+    // locked spot (needs tool)
+    // tool-holding free spot
+
+    var freeSpots = [];
+    var lockedSpot = null;
+    var toolSpot = null;
+    var requiredTool = null;
+
+    switch (archetype) {
+      case 0:
+        // Mattress has tool, Vent is locked, Poster is free
+        freeSpots = ['poster'];
+        lockedSpot = 'vent';
+        toolSpot = 'mattress';
+        requiredTool = 'screwdriver';
+        break;
+      case 1:
+        // Mattress has tool, Box is locked, Poster is free
+        freeSpots = ['poster'];
+        lockedSpot = 'box';
+        toolSpot = 'mattress';
+        requiredTool = 'key';
+        break;
+      case 2:
+        // Mattress has tool, Brick is locked, Poster is free
+        freeSpots = ['poster'];
+        lockedSpot = 'brick';
+        toolSpot = 'mattress';
+        requiredTool = 'crowbar';
+        break;
+      case 3:
+        // Poster has tool, Dark is locked, Mattress is free
+        freeSpots = ['mattress'];
+        lockedSpot = 'dark';
+        toolSpot = 'poster';
+        requiredTool = 'flashlight';
+        break;
+      case 4:
+        // Mattress has tool, Mirror is locked, Poster is free
+        freeSpots = ['poster'];
+        lockedSpot = 'mirror';
+        toolSpot = 'mattress';
+        requiredTool = 'rag';
+        break;
+      case 5:
+        // Poster has tool, Vent is locked, Mattress is free
+        freeSpots = ['mattress'];
+        lockedSpot = 'vent';
+        toolSpot = 'poster';
+        requiredTool = 'screwdriver';
+        break;
+      case 6:
+        // Mattress has tool, Brick is locked, Poster is free
+        freeSpots = ['poster'];
+        lockedSpot = 'brick';
+        toolSpot = 'mattress';
+        requiredTool = 'hammer';
+        break;
+      default:
+        freeSpots = ['poster'];
+        lockedSpot = 'vent';
+        toolSpot = 'mattress';
+        requiredTool = 'screwdriver';
+    }
+
+    // Tool holding spot gets the tool AND a free clue? 
+    // No — tool spot gives tool only. Free spots give clues directly.
+    // We need exactly 4 digits revealed across: freeSpots clues + lockedSpot clue.
+
+    // Determine which digits each spot reveals
+    // freeSpots[0] → 1 digit, lockedSpot → 3 digits? That's 4 total.
+    // Wait, we want at least 1-2 locked spots. Let's make it:
+    //   freeSpots each reveal 1 digit  (1 or 2 free spots)
+    //   lockedSpot reveals remaining 2-3 digits
+
+    var freeSpotList = freeSpots.slice();
+    // ensure at least 1 free spot
+    if (freeSpotList.length === 0) freeSpotList.push('mattress');
+
+    // Assign digits to spots
+    var digitAssignments = {};
+    var digitIdx = 0;
+
+    // free spots get 1 digit each
+    for (var i = 0; i < freeSpotList.length; i++) {
+      digitAssignments[freeSpotList[i]] = [digitIdx];
+      digitIdx++;
+    }
+
+    // locked spot gets remaining digits
+    var remainingDigits = [];
+    while (digitIdx < 4) {
+      remainingDigits.push(digitIdx);
+      digitIdx++;
+    }
+    digitAssignments[lockedSpot] = remainingDigits;
+
+    // tool spot reveals tool only (no clue)
+    // But if tool spot === a free spot? In our archetypes, toolSpot and freeSpots are disjoint.
+    // Verify: case 0 tool=mattress free=poster lock=vent. OK.
+
+    // Build clue text for each spot
+    var clueTexts = {};
+
+    function buildClue(spot, digitIndices) {
+      var templates = CLUE_TEMPLATES[spot];
+      if (!templates) templates = ['You find something: <b>{digits}</b>'];
+      var tpl = templates[Math.floor(rnd() * templates.length)];
+      var map = {};
+      for (var j = 0; j < digitIndices.length; j++) {
+        var idx = digitIndices[j];
+        map['{d' + idx + '}'] = digits[idx];
+      }
+      // handle {digits} placeholder
+      var digitsStr = '';
+      for (var k = 0; k < digitIndices.length; k++) {
+        digitsStr += digits[digitIndices[k]];
+      }
+      map['{digits}'] = digitsStr;
+
+      var out = tpl;
+      for (var key in map) {
+        if (Object.prototype.hasOwnProperty.call(map, key)) {
+          out = out.split(key).join(map[key]);
+        }
+      }
+      return out;
+    }
+
+    for (var spot in digitAssignments) {
+      if (Object.prototype.hasOwnProperty.call(digitAssignments, spot)) {
+        clueTexts[spot] = buildClue(spot, digitAssignments[spot]);
+      }
+    }
+
+    return {
+      n: n,
+      digits: digits,
+      code: digits.join(''),
+      sector: sector,
+      theme: theme,
+      archetype: archetype,
+      freeSpots: freeSpotList,
+      lockedSpot: lockedSpot,
+      toolSpot: toolSpot,
+      requiredTool: requiredTool,
+      clueTexts: clueTexts,
+      digitAssignments: digitAssignments,
+      revealed: {},      // spot -> true when clue revealed
+      toolCollected: false,
+      lockOpened: false
+    };
+  }
 
   /* =========================================================
      STATE
      ========================================================= */
-  var SAVE_KEY = 'saveElena_v1';
+  var SAVE_KEY = 'saveElena_v2';
   var state = {
     current: 1,
     maxUnlocked: 1,
@@ -866,7 +1120,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var adTimer = null;
   var adCallback = null;
   var toastTimer = null;
+  var toolToastTimer = null;
   var exprTimer = null;
+  var equippedTool = null;
+  var collectedTools = [];
 
   /* =========================================================
      SAVE / LOAD
@@ -885,6 +1142,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function loadState() {
     try {
       var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) {
+        // migrate from v1
+        raw = localStorage.getItem('saveElena_v1');
+      }
       if (!raw) return;
       var s = JSON.parse(raw);
       if (!s || typeof s !== 'object') return;
@@ -893,48 +1154,6 @@ document.addEventListener('DOMContentLoaded', function () {
       state.stars = (s.stars && typeof s.stars === 'object') ? s.stars : {};
       state.muted = !!s.muted;
     } catch (e) {}
-  }
-
-  /* =========================================================
-     ROOM GENERATION
-     ========================================================= */
-  function genRoom(n) {
-    var rnd = mulberry32(n * 7919 + 104729);
-    var digits = [];
-    for (var i = 0; i < 4; i++) digits.push(Math.floor(rnd() * 10));
-
-    var sector = Math.min(9, Math.floor((n - 1) / 10));
-    var theme = THEMES[sector];
-
-    function fill(tpl, map) {
-      var out = tpl;
-      for (var k in map) {
-        if (Object.prototype.hasOwnProperty.call(map, k)) {
-          out = out.split(k).join(map[k]);
-        }
-      }
-      return out;
-    }
-
-    var mt = CLUES.mattress[Math.floor(rnd() * CLUES.mattress.length)];
-    var pt = CLUES.poster[Math.floor(rnd() * CLUES.poster.length)];
-    var vt = CLUES.vent[Math.floor(rnd() * CLUES.vent.length)];
-
-    var clueTexts = {
-      mattress: fill(mt, { '{d0}': digits[0] }),
-      poster: fill(pt, { '{d1}': digits[1] }),
-      vent: fill(vt, { '{d2}': digits[2], '{d3}': digits[3] })
-    };
-
-    return {
-      n: n,
-      digits: digits,
-      code: digits.join(''),
-      sector: sector,
-      theme: theme,
-      clueTexts: clueTexts,
-      revealed: { mattress: false, poster: false, vent: false }
-    };
   }
 
   /* =========================================================
@@ -957,6 +1176,26 @@ document.addEventListener('DOMContentLoaded', function () {
     $('elena').classList.remove('free');
     $('freedomGlow').classList.remove('show');
     $('alarmFlash').classList.remove('show');
+
+    // Reset hotspot visual states
+    var hs = document.querySelectorAll('.hotspot');
+    for (var i = 0; i < hs.length; i++) {
+      hs[i].classList.remove('found');
+      hs[i].classList.remove('locked-hs');
+    }
+
+    // Hide lock overlays
+    var vp = $('ventPadlock');
+    if (vp) vp.setAttribute('opacity', '0');
+    var vg = $('ventScrews');
+    if (vg) vg.setAttribute('opacity', '1');
+    var pg = $('posterGrime');
+    if (pg) pg.setAttribute('opacity', '0');
+
+    // Clear tool slot
+    equippedTool = null;
+    collectedTools = [];
+    renderToolSlot();
   }
 
   /* ---- expressions ---- */
@@ -964,14 +1203,12 @@ document.addEventListener('DOMContentLoaded', function () {
     worried: {
       browL: 'M183 322 L196 319',
       browR: 'M204 319 L217 322',
-      mouth: 'M191 344 Q200 339 209 344',
-      fill: 'none'
+      mouth: 'M191 344 Q200 339 209 344'
     },
     hopeful: {
       browL: 'M183 319 L196 318',
       browR: 'M204 318 L217 319',
-      mouth: 'M192 342 Q200 347 208 342',
-      fill: 'none'
+      mouth: 'M192 342 Q200 347 208 342'
     },
     panicked: {
       browL: 'M183 316 L196 319',
@@ -982,8 +1219,7 @@ document.addEventListener('DOMContentLoaded', function () {
     happy: {
       browL: 'M183 318 L196 316',
       browR: 'M204 316 L217 318',
-      mouth: 'M190 340 Q200 350 210 340',
-      fill: 'none'
+      mouth: 'M190 340 Q200 350 210 340'
     }
   };
 
@@ -996,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     br.setAttribute('d', e.browR);
     mo.setAttribute('d', e.mouth);
 
-    if (e.fill && e.fill !== 'none') {
+    if (e.fill) {
       mo.setAttribute('fill', e.fill);
       mo.setAttribute('stroke', 'none');
     } else {
@@ -1021,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', function () {
     b.classList.add('pop');
   }
 
-  /* ---- clue toast ---- */
+  /* ---- toasts ---- */
   function showToast(html) {
     var toast = $('clueToast');
     toast.innerHTML = html;
@@ -1030,6 +1266,18 @@ document.addEventListener('DOMContentLoaded', function () {
     toastTimer = setTimeout(function () {
       toast.classList.remove('show');
     }, 4200);
+  }
+
+  function showToolToast(toolKey) {
+    var t = TOOLS[toolKey];
+    if (!t) return;
+    var el = $('toolToast');
+    el.innerHTML = '<span class="ti">' + t.emoji + '</span>Found: ' + t.name + '!';
+    el.classList.add('show');
+    if (toolToastTimer) clearTimeout(toolToastTimer);
+    toolToastTimer = setTimeout(function () {
+      el.classList.remove('show');
+    }, 2000);
   }
 
   /* ---- digit slots ---- */
@@ -1043,6 +1291,42 @@ document.addEventListener('DOMContentLoaded', function () {
         slots[i].textContent = '?';
         slots[i].classList.remove('on');
       }
+    }
+  }
+
+  /* ---- tool slot ---- */
+  function renderToolSlot() {
+    var slot = $('toolSlot');
+    if (!slot) return;
+
+    // Add badge element if not present
+    if (!slot.querySelector('.badge')) {
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = '✓';
+      slot.appendChild(badge);
+    }
+
+    if (collectedTools.length === 0) {
+      slot.className = 'empty';
+      slot.innerHTML = '—';
+      var b = document.createElement('span');
+      b.className = 'badge';
+      b.textContent = '✓';
+      slot.appendChild(b);
+    } else {
+      var tool = collectedTools[0];
+      var t = TOOLS[tool];
+      if (equippedTool === tool) {
+        slot.className = 'equipped';
+      } else {
+        slot.className = '';
+      }
+      slot.innerHTML = t.emoji;
+      var badge2 = document.createElement('span');
+      badge2.className = 'badge';
+      badge2.textContent = '✓';
+      slot.appendChild(badge2);
     }
   }
 
@@ -1084,6 +1368,44 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* =========================================================
+     HOTSPOT VISUAL SETUP
+     ========================================================= */
+  function applyHotspotVisuals() {
+    // Reset
+    var hs = document.querySelectorAll('.hotspot');
+    for (var i = 0; i < hs.length; i++) {
+      hs[i].classList.remove('found');
+      hs[i].classList.remove('locked-hs');
+    }
+
+    // Hide lock overlays
+    var vp = $('ventPadlock');
+    if (vp) vp.setAttribute('opacity', '0');
+    var vg = $('ventScrews');
+    if (vg) vg.setAttribute('opacity', '1');
+    var pg = $('posterGrime');
+    if (pg) pg.setAttribute('opacity', '0');
+
+    // Mark locked spot
+    var lockNode = document.querySelector('.hotspot[data-hot="' + room.lockedSpot + '"]');
+    if (lockNode && !room.lockOpened) {
+      lockNode.classList.add('locked-hs');
+    }
+
+    // Show lock-specific overlays
+    if (!room.lockOpened) {
+      if (room.lockedSpot === 'vent') {
+        if (vp) vp.setAttribute('opacity', '0'); // screws are visible (default)
+      } else if (room.lockedSpot === 'mirror') {
+        if (pg) pg.setAttribute('opacity', '0.85');
+      } else if (room.lockedSpot === 'dark') {
+        // dark corner: handled by dimming? We'll add a dark overlay via CSS
+        // For simplicity, no overlay — Elena hints it's dark
+      }
+    }
+  }
+
+  /* =========================================================
      ROOM LOADING
      ========================================================= */
   function loadRoom(n) {
@@ -1093,22 +1415,145 @@ document.addEventListener('DOMContentLoaded', function () {
     mistakes = 0;
     hintsUsed = 0;
     solved = false;
+    equippedTool = null;
+    collectedTools = [];
 
     resetScene();
     applyTheme(room.theme);
+    applyHotspotVisuals();
 
     $('roomNum').textContent = String(n);
     $('sectorName').textContent = room.theme.name;
 
-    var hs = document.querySelectorAll('.hotspot');
-    for (var i = 0; i < hs.length; i++) hs[i].classList.remove('found');
-
     renderDigits();
     renderEntry();
+    renderToolSlot();
     closeModal('keypadModal');
 
     setExpression('worried');
-    say(pick(OPENING_LINES));
+
+    // Opening line contextual to archetype
+    var lockInfo = LOCKS[room.lockedSpot];
+    var toolInfo = TOOLS[room.requiredTool];
+    var openers = [
+      'The keypad needs 4 digits. But something in here is ' + (lockInfo ? lockInfo.label.toLowerCase() : 'locked') + '... I bet a ' + (toolInfo ? toolInfo.name.toLowerCase() : 'tool') + ' is hidden nearby.',
+      'We need the code — but that ' + (lockInfo ? lockInfo.label.toLowerCase() : 'thing') + ' is ' + (room.lockedSpot === 'vent' ? 'screwed shut' : room.lockedSpot === 'box' ? 'locked tight' : room.lockedSpot === 'mirror' ? 'covered in grime' : room.lockedSpot === 'dark' ? 'pitch black' : 'stuck') + '. Find a tool first!',
+      'Search the cell. Collect a tool, then use it on the ' + (lockInfo ? lockInfo.label.toLowerCase() : 'blocked spot') + ' to reveal the numbers.'
+    ];
+    say(pick(openers));
+  }
+
+  /* =========================================================
+     TOOL PICKUP & LOCK INTERACTION
+     ========================================================= */
+  function collectTool(toolKey) {
+    if (room.toolCollected) return;
+    room.toolCollected = true;
+    collectedTools = [toolKey];
+    showToolToast(toolKey);
+    Sound.pickup();
+    setExpression('hopeful', 2200);
+    say('A ' + TOOLS[toolKey].name + '! ' + (room.lockedSpot === 'vent' ? 'Use it on the vent grate!' : room.lockedSpot === 'box' ? 'Use it on the wooden box!' : room.lockedSpot === 'mirror' ? 'Wipe the mirror with it!' : room.lockedSpot === 'dark' ? 'Shine it in the dark corner!' : 'Use it on the loose brick!'));
+    renderToolSlot();
+  }
+
+  function equipTool() {
+    if (collectedTools.length === 0) return;
+    var tool = collectedTools[0];
+    if (equippedTool === tool) {
+      // unequip
+      equippedTool = null;
+      say('Unequipped the ' + TOOLS[tool].name + '.');
+    } else {
+      equippedTool = tool;
+      Sound.beep();
+      say(TOOLS[tool].name + ' equipped! Now tap the ' + LOCKS[room.lockedSpot].label + '.');
+    }
+    renderToolSlot();
+  }
+
+  function tryUnlockLockedSpot() {
+    if (!room.lockedSpot) return;
+    if (room.lockOpened) {
+      // already opened — reveal clue if not already
+      revealLockedClue();
+      return;
+      }
+
+    if (equippedTool === null) {
+      // check if they have the right tool but didn't equip
+      if (collectedTools.length > 0) {
+        say('Tap your tool in the bottom bar to equip it first!');
+      } else {
+        say(LOCKS[room.lockedSpot].hint);
+      }
+      setExpression('worried', 1600);
+      return;
+    }
+
+    var lockDef = LOCKS[room.lockedSpot];
+    var toolDef = TOOLS[equippedTool];
+
+    if (lockDef.tools.indexOf(equippedTool) === -1) {
+      // wrong tool
+      Sound.error();
+      setExpression('panicked', 1800);
+      say('That ' + toolDef.name + ' will not work here. ' + lockDef.hint);
+      return;
+    }
+
+    // Correct tool — unlock!
+    room.lockOpened = true;
+    room.revealed[room.lockedSpot] = true;
+
+    // Remove lock visual
+    var lockNode = document.querySelector('.hotspot[data-hot="' + room.lockedSpot + '"]');
+    if (lockNode) {
+      lockNode.classList.remove('locked-hs');
+      lockNode.classList.add('found');
+    }
+
+    // Animate specific unlock
+    if (room.lockedSpot === 'vent') {
+      var vs = $('ventScrews');
+      if (vs) vs.setAttribute('opacity', '0');
+      Sound.unlock();
+    } else if (room.lockedSpot === 'mirror') {
+      var pg = $('posterGrime');
+      if (pg) {
+        pg.style.transition = 'opacity 0.8s ease';
+        pg.setAttribute('opacity', '0');
+      }
+      Sound.wipe();
+    } else if (room.lockedSpot === 'box') {
+      Sound.unlock();
+    } else if (room.lockedSpot === 'brick') {
+      Sound.noise(0.4, 0.22, 0, 500);
+      Sound.tone(140, 0.3, 'sawtooth', 0.12);
+    } else if (room.lockedSpot === 'dark') {
+      Sound.tone(440, 0.2, 'sine', 0.1);
+    }
+
+    setExpression('hopeful', 2500);
+    say('The ' + lockDef.label + ' opens! Look at the numbers!');
+
+    // Mark digits found
+    var assigned = room.digitAssignments[room.lockedSpot] || [];
+    for (var i = 0; i < assigned.length; i++) {
+      found[assigned[i]] = true;
+    }
+    renderDigits();
+
+    showToast(room.clueTexts[room.lockedSpot]);
+  }
+
+  function revealLockedClue() {
+    var assigned = room.digitAssignments[room.lockedSpot] || [];
+    for (var i = 0; i < assigned.length; i++) {
+      found[assigned[i]] = true;
+    }
+    renderDigits();
+    showToast(room.clueTexts[room.lockedSpot]);
   }
 
   /* =========================================================
@@ -1122,26 +1567,78 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (room.revealed[hot]) {
-      setExpression('worried', 1500);
-      say(pick(ALREADY_LINES));
+    // If it's the locked spot
+    if (hot === room.lockedSpot) {
+      tryUnlockLockedSpot();
       return;
     }
 
-    room.revealed[hot] = true;
+    // If it's the tool spot and tool not yet collected
+    if (hot === room.toolSpot && !room.toolCollected) {
+      collectTool(room.requiredTool);
+      // Tool spot may ALSO be a free spot? In our archetypes, toolSpot is always
+      // disjoint from freeSpots. But just in case:
+      if (room.digitAssignments[hot] && !room.revealed[hot]) {
+        room.revealed[hot] = true;
+        var assigned = room.digitAssignments[hot];
+        for (var i = 0; i < assigned.length; i++) found[assigned[i]] = true;
+        renderDigits();
+        showToast(room.clueTexts[hot]);
+      }
+      var node = document.querySelector('.hotspot[data-hot="' + hot + '"]');
+      if (node) node.classList.add('found');
+      return;
+    }
 
-    var node = document.querySelector('.hotspot[data-hot="' + hot + '"]');
-    if (node) node.classList.add('found');
+    // If it's a free spot
+    if (room.freeSpots.indexOf(hot) !== -1) {
+      if (room.revealed[hot]) {
+        setExpression('worried', 1500);
+        say('I already checked there…');
+        return;
+      }
+      room.revealed[hot] = true;
+      var assignedF = room.digitAssignments[hot] || [];
+      for (var j = 0; j < assignedF.length; j++) found[assignedF[j]] = true;
+      renderDigits();
+      Sound.pickup();
+      setExpression('hopeful', 2400);
+      say(pick([
+        "Yes! That's one of the numbers!",
+        'Keep going — we are close!',
+        'I knew you would find it!',
+        'Perfect! Remember it!'
+      ]));
+      showToast(room.clueTexts[hot]);
+      var nodeF = document.querySelector('.hotspot[data-hot="' + hot + '"]');
+      if (nodeF) nodeF.classList.add('found');
+      return;
+    }
 
-    if (hot === 'mattress') { found[0] = true; }
-    if (hot === 'poster')   { found[1] = true; }
-    if (hot === 'vent')     { found[2] = true; found[3] = true; }
+    // Tool spot already collected, or non-free/non-locked spot
+    // If tool spot already collected and has a clue
+    if (hot === room.toolSpot && room.toolCollected) {
+      if (room.digitAssignments[hot] && !room.revealed[hot]) {
+        room.revealed[hot] = true;
+        var assignedT = room.digitAssignments[hot];
+        for (var k = 0; k < assignedT.length; k++) found[assignedT[k]] = true;
+        renderDigits();
+        showToast(room.clueTexts[hot]);
+        Sound.pickup();
+        return;
+      }
+      setExpression('worried', 1500);
+      say('I already searched there.');
+      return;
+    }
 
-    renderDigits();
-    Sound.pickup();
-    setExpression('hopeful', 2400);
-    say(pick(CLUE_REACTIONS));
-    showToast(room.clueTexts[hot]);
+    // Fallback idle
+    var now = Date.now();
+    if (now - lastIdle > 2600) {
+      lastIdle = now;
+      setExpression('worried', 1600);
+      say('Look around — there must be a tool and a clue hidden somewhere!');
+    }
   }
 
   function openKeypad() {
@@ -1191,7 +1688,12 @@ document.addEventListener('DOMContentLoaded', function () {
       shakeDisplay();
       flashAlarm();
       setExpression('panicked', 2000);
-      say(pick(WRONG_LINES));
+      say(pick([
+        "No! That's wrong — the alarm will wake the guards!",
+        'Wait, wait — that is not it. Try again!',
+        'Shhh! That was not the code!',
+        'The light flashed red… please be careful!'
+      ]));
       entry = '';
       renderEntry();
     }
@@ -1253,8 +1755,8 @@ document.addEventListener('DOMContentLoaded', function () {
      ========================================================= */
   function goNextRoom() {
     if (state.current >= 100) {
-      openModal('mapModal');
       renderMap();
+      openModal('mapModal');
       return;
     }
 
@@ -1273,7 +1775,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* ---- simulated ad player (swap for AdsGram / Monetag SDK) ---- */
+  /* ---- simulated ad player ---- */
   function playAd(seconds, label, onDone) {
     var modal = $('adModal');
     var countEl = $('adCount');
@@ -1313,48 +1815,50 @@ document.addEventListener('DOMContentLoaded', function () {
     };
   }
 
-  /* =================== AD HOOKS =================== */
+  /* =================== AD HOOKS — MONETAG =================== */
   function showRewardedAdHint() {
-    /*
-      Production hook (AdsGram example):
-      if (window.AdsGram) {
-        window.AdsGram.init({ blockId: 'YOUR_BLOCK_ID' })
-          .show()
-          .then(function(){ applyHint(); })
-          .catch(function(){ applyHint(); });
-        return;
-      }
-    */
-    playAd(3, 'Rewarded Ad', function () { applyHint(); });
+    if (typeof window.show_12321503 === 'function') {
+      window.show_12321503().then(function () {
+        applyHint();
+      }).catch(function () {
+        applyHint(); // graceful fallback
+      });
+    } else {
+      // Fallback simulated ad
+      playAd(3, 'Rewarded Ad', function () { applyHint(); });
+    }
   }
 
   function showRewardedAdSkip() {
-    /*
-      Production hook (Monetag example):
-      if (window.show_XXXXXXX) {
-        window.show_XXXXXXX().then(function(){ doSkip(); });
-        return;
-      }
-    */
-    playAd(3, 'Rewarded Ad', function () { doSkip(); });
+    if (typeof window.show_12321503 === 'function') {
+      window.show_12321503().then(function () {
+        doSkip();
+      }).catch(function () {
+        doSkip(); // graceful fallback
+      });
+    } else {
+      playAd(3, 'Rewarded Ad', function () { doSkip(); });
+    }
   }
 
   function showInterstitialAd(callback) {
-    /*
-      Production hook:
-      if (window.show_XXXXXXX) {
-        window.show_XXXXXXX().then(callback).catch(callback);
-        return;
-      }
-    */
-    playAd(3, 'Interstitial Ad', callback);
+    if (typeof window.show_12321503 === 'function') {
+      window.show_12321503().then(function () {
+        if (callback) callback();
+      }).catch(function () {
+        if (callback) callback(); // graceful fallback
+      });
+    } else {
+      playAd(3, 'Interstitial Ad', callback);
+    }
   }
-  /* ================================================= */
+  /* ======================================================= */
 
   function applyHint() {
     if (!room || solved) return;
     hintsUsed++;
 
+    // Find first unrevealed digit
     var missing = [];
     for (var i = 0; i < 4; i++) if (!found[i]) missing.push(i);
 
@@ -1523,13 +2027,23 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      /* Elena / background tap reaction */
+      // background tap
       var now = Date.now();
       if (now - lastIdle > 2600 && !solved) {
         lastIdle = now;
         setExpression('worried', 1600);
-        say(pick(IDLE_LINES));
+        say('Tap the objects in the cell — look for a tool and the locked clue!');
       }
+    });
+
+    /* --- tool slot --- */
+    $('toolSlot').addEventListener('click', function () {
+      Sound.init();
+      if (collectedTools.length === 0) {
+        say('No tool yet. Search the cell!');
+        return;
+      }
+      equipTool();
     });
 
     /* --- dock keypad button --- */
@@ -1568,7 +2082,7 @@ document.addEventListener('DOMContentLoaded', function () {
       shareRescue();
     });
 
-    /* --- keyboard support (desktop) --- */
+    /* --- keyboard support --- */
     document.addEventListener('keydown', function (e) {
       if (!$('keypadModal').classList.contains('show')) return;
       if (e.key >= '0' && e.key <= '9') pressKey(e.key);
@@ -1589,7 +2103,6 @@ document.addEventListener('DOMContentLoaded', function () {
     bindEvents();
     loadRoom(state.current);
 
-    /* safety: make sure no stray ad modal stays open */
     closeModal('adModal');
     closeModal('winModal');
     closeModal('mapModal');
