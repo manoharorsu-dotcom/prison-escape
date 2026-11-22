@@ -13,15 +13,17 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}
 #app{position:relative;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),6px) 10px calc(env(safe-area-inset-bottom) + 8px);background:radial-gradient(ellipse at 50% -10%,#232a3b 0,#0b0d13 55%,#050608 100%)}
 #app:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,#000d 100%);animation:fl 7s infinite}
 @keyframes fl{0%,44%,56%,100%{opacity:1}48%{opacity:.6}52%{opacity:.85}}
-header{display:flex;align-items:center;gap:8px;padding:4px 0 6px;z-index:2}
-.t{flex:1;min-width:0}
-.t b{display:block;font:700 17px "Arial Narrow",Impact,sans-serif;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 0 6px;z-index:2}
+.t{flex:1 0 100%;min-width:0}
+.t b{display:inline;margin-right:8px;font:700 15px "Arial Narrow",Impact,sans-serif;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .t small{color:var(--dm);font-size:12px}
 .bar{height:4px;background:var(--ln);border-radius:2px;margin-top:5px;overflow:hidden}
 .bar i{display:block;height:100%;width:1%;background:var(--ac);transition:width .5s}
-.hb{background:var(--pan);border:1px solid var(--ln);border-radius:12px;min-width:46px;height:46px;font-size:19px}
-.hint{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200;font-weight:800;font-size:13px;padding:0 13px;border:0;box-shadow:0 0 14px #e8a63a66}
-#msg{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.35;color:#b9c0d0;padding:0 6px;z-index:2}
+.hb{background:var(--pan);border:1px solid var(--ln);border-radius:12px;min-width:42px;height:42px;font-size:19px}
+.hint{background:linear-gradient(#f2b54a,#c47f10);color:#1c1200;font-weight:800;font-size:12px;padding:0 4px;flex:1;border:0;box-shadow:0 0 14px #e8a63a66}
+.skip{flex:1;font-size:12px;font-weight:700;padding:0 4px;border-color:var(--ac);color:var(--ac)}
+.lvb{flex:1;font-size:12px;font-weight:700;padding:0 4px}
+#msg{min-height:34px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.35;color:#b9c0d0;padding:0 6px;z-index:2}
 #scene{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:10px;padding:4px 0 10px;z-index:2}
 .card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:14px;background:linear-gradient(160deg,#252b38,#14181f);border:1px solid #3a4252;box-shadow:inset 0 1px 0 #ffffff12,0 4px 10px #0008;padding:6px;min-height:0;transition:transform .1s}
 .card:active{transform:scale(.96)}
@@ -52,14 +54,25 @@ button.slot{border-style:solid;border-color:#3a4252;background:var(--pan)}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pad button{height:58px;border-radius:12px;background:#262c39;border:1px solid var(--ln);font-size:24px}
 .pad button:active{background:#3a4252}
+.mod.map{display:flex;flex-direction:column;padding:0;overflow:hidden;height:86vh;height:86dvh;max-width:380px}
+.mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--ln);text-align:left}
+.mh h3{margin:0}.mh p{margin:2px 0 0;font-size:13px;color:var(--dm)}.mh b{color:var(--ac)}
+.lvw{flex:1;min-height:0;overflow:auto;padding:12px 14px 16px}
+.lv{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.lc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:56px;border-radius:10px;background:#262c39;border:1px solid var(--ln);padding:0}
+.lc b{font-size:15px}.lc span{font-size:11px;color:#59627a;letter-spacing:-.05em}.lc i{font-style:normal;color:var(--ac)}
+.lc.cur{border-color:var(--ac);box-shadow:0 0 10px #e8a63a77}
+.lc.lock{opacity:.45;background:#12151c}.lc.lock span{font-size:13px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
     <div class="t"><b id="wing"></b><small id="rn"></small><div class="bar"><i id="pb"></i></div></div>
-    <button class="hb" id="mute" aria-label="Sound">🔊</button>
+    <button class="hb lvb" id="lv">🗺️ Levels</button>
     <button class="hb hint" id="hint">💡 Hint (Ad)</button>
+    <button class="hb skip" id="skip">⏭️ Skip (Ad)</button>
+    <button class="hb" id="mute" aria-label="Sound">🔊</button>
   </header>
   <div id="msg"></div>
   <div id="scene"></div>
@@ -76,10 +89,12 @@ const hap = t => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) 
 const $ = s => document.querySelector(s);
 
 /* ---------- Save ---------- */
-function fresh() { return { room: 1, mute: 0, salt: Math.floor(Math.random() * 1e6) }; }
-function load() { try { const s = JSON.parse(localStorage.getItem("pe100")); if (s && s.room) return s; } catch (e) {} return fresh(); }
+function fresh() { return { room: 1, max: 1, mute: 0, salt: Math.floor(Math.random() * 1e6) }; }
+function load() { try { const s = JSON.parse(localStorage.getItem("pe100")); if (s && s.room) { s.max = Math.max(s.max || 1, s.room); return s; } } catch (e) {} return fresh(); }
 function save() { try { localStorage.setItem("pe100", JSON.stringify(S)); } catch (e) {} }
-let S = load(), cur, inv = [], sel = -1;
+function loadStars() { try { const o = JSON.parse(localStorage.getItem("pe_stars")); if (o && typeof o === "object") return o; } catch (e) {} return {}; }
+function saveStars() { try { localStorage.setItem("pe_stars", JSON.stringify(ST)); } catch (e) {} }
+let S = load(), ST = loadStars(), cur, inv = [], sel = -1, run = { wrong: 0, hint: 0, skip: 0 };
 
 /* ---------- Sound (Web Audio, no files) ---------- */
 let ac;
@@ -191,15 +206,15 @@ function genRoom(n) {
   }
   while (O.length < 5) add({ txt: pick(DECOY, r) });
   O.push(door); shuf(O, r);
-  return { O, st, intro, w, kind };
+  return { O, st, intro, w, kind, n };
 }
 
 /* ---------- UI helpers ---------- */
 function msg(t) { $("#msg").textContent = t; }
 function modal(html, btns, sticky) {
-  $("#mod").innerHTML = html + (btns || []).map((b, i) => `<button class="b${b[2] ? " p" : ""}" data-b="${i}">${b[0]}</button>`).join("");
+  $("#mod").className = "mod"; $("#mod").innerHTML = html + (btns || []).map((b, i) => `<button class="b${b[2] ? " p" : ""}" data-b="${i}">${b[0]}</button>`).join("");
   $("#ov").classList.add("on"); $("#ov").dataset.sticky = sticky ? 1 : "";
-  $("#mod").onclick = e => { const b = e.target.closest("[data-b]"); if (b) { const f = btns[+b.dataset.b][1]; closeModal(); if (f) f(); } };
+  $("#mod").onclick = e => { const b = e.target.closest("[data-b]"); if (b) { const bt = btns[+b.dataset.b]; if (!bt[3]) closeModal(); if (bt[1]) bt[1](); } };
 }
 function closeModal() { $("#ov").classList.remove("on"); $("#mod").onclick = null; }
 $("#ov").addEventListener("click", e => { if (e.target.id === "ov" && !$("#ov").dataset.sticky) { sfx.click(); closeModal(); } });
@@ -207,8 +222,8 @@ $("#ov").addEventListener("click", e => { if (e.target.id === "ov" && !$("#ov").
 function render() {
   const W = WINGS[cur.w];
   $("#wing").textContent = `${W[1]} ${W[0]}`;
-  $("#rn").textContent = `Room ${S.room} of 100  ·  Wing ${cur.w + 1}/10`;
-  $("#pb").style.width = S.room + "%";
+  $("#rn").textContent = `Room ${cur.n} of 100  ·  Wing ${cur.w + 1}/10`;
+  $("#pb").style.width = cur.n + "%";
   $("#mute").textContent = S.mute ? "🔇" : "🔊";
   $("#scene").innerHTML = cur.O.map((o, i) => {
     const locked = o.lock && !o.open;
@@ -222,7 +237,7 @@ function shake(i) { const c = $(`#scene [data-i="${i}"]`); if (c) { c.classList.
 
 /* ---------- Game flow ---------- */
 function start(n) {
-  S.room = n; save(); cur = genRoom(n); inv = []; sel = -1;
+  n = Math.max(1, Math.min(100, n)); S.room = n; save(); cur = genRoom(n); inv = []; sel = -1; run = { wrong: 0, hint: 0, skip: 0 };
   render(); msg(cur.intro);
 }
 $("#scene").addEventListener("click", e => { const c = e.target.closest(".card"); if (c) tap(+c.dataset.i); });
@@ -272,28 +287,53 @@ function keypad(o, i) {
     c += k; sfx.beep(+k); show();
     if (c.length === 4) setTimeout(() => {
       if (c === o.lock.code) { closeModal(); sfx.pick(); unlock(o); }
-      else { sfx.err(); c = ""; show(); const d = $("#disp"); if (d) { d.classList.add("shake"); d.addEventListener("animationend", () => d.classList.remove("shake"), { once: true }); } msg("Wrong code. The lock stays shut."); }
+      else { run.wrong++; sfx.err(); c = ""; show(); const d = $("#disp"); if (d) { d.classList.add("shake"); d.addEventListener("animationend", () => d.classList.remove("shake"), { once: true }); } msg("Wrong code. The lock stays shut."); }
     }, 180);
   };
 }
 
+const bar = x => "⭐".repeat(x) + "☆".repeat(3 - x);
+function starsFor() { return run.skip || run.wrong >= 3 ? 1 : run.hint || run.wrong ? 2 : 3; }
+function finishRoom(n) { // records best stars, unlocks the next room, saves
+  const s = starsFor(), prev = ST[n] || 0;
+  if (s > prev) { ST[n] = s; saveStars(); }
+  S.max = Math.max(S.max, Math.min(100, n + 1)); S.room = Math.min(100, n + 1); save();
+  return { s, best: Math.max(s, prev) };
+}
 function win() {
-  const n = S.room, last = n >= 100;
+  const n = cur.n, last = n >= 100, r = finishRoom(n);
   sfx.win();
-  if (last) { S.done = 1; } else { S.room = n + 1; }
-  save();
-  modal(last
-    ? `<h2>🏆 You escaped!</h2><p>All 100 rooms cleared. Freedom is yours.</p>`
-    : `<h2>🔓 Room ${n} cleared!</h2><p>You slip through the ${cur.O.find(o => o.door).name} and move on.</p>`,
-    [["📢 Challenge Friends", () => shareChallenge(n, last), 0],
-     last ? ["🔁 Play Again", () => { S = fresh(); start(1); }, 1] : ["Next Room ▶", () => start(S.room), 1]], true);
+  modal(`<h2>${last ? "🏆 You escaped!" : `🔓 Room ${n} cleared!`}</h2>
+    <div style="font-size:34px;margin:2px 0 10px">${bar(r.s)}</div>
+    <p>${last ? "All 100 rooms cleared. Freedom is yours." : `You slip through the ${cur.O.find(o => o.door).name} and move on.`}</p>
+    <p style="font-size:13px;color:var(--dm)">${r.s === 3 ? "Flawless: no wrong codes, no hints." : `Best: ${bar(r.best)}. Replay for 3 stars with no wrong codes and no hints.`}</p>`,
+    [["📢 Challenge Friends", () => shareChallenge(n, last, r.s), 0, 1],
+     ["🔁 Replay Room", () => start(n)],
+     last ? ["🗺️ Levels", openLevels, 1] : ["Next Room ▶", () => nextRoom(n), 1]], true);
   hap("success");
 }
-function shareChallenge(n, last) {
-  const text = last ? "🏆 I escaped all 100 rooms of Prison Escape! Think you can do it?" : `🔓 I just cleared Room ${n} of Prison Escape: 100 Rooms! Can you beat me?`;
+function shareChallenge(n, last, st) {
+  const text = last ? `🏆 I escaped all 100 rooms of Prison Escape! Think you can do it?` : `🔓 I cleared Room ${n} of Prison Escape: 100 Rooms with ${bar(st)}! Can you beat me?`;
   const u = "https://t.me/share/url?url=" + encodeURIComponent(APP_URL) + "&text=" + encodeURIComponent(text);
   try { if (tg && tg.initData) return tg.openTelegramLink(u); } catch (e) {}
   window.open(u, "_blank");
+}
+function openLevels() {
+  sfx.click();
+  const total = Object.values(ST).reduce((a, b) => a + b, 0), cells = [];
+  for (let i = 1; i <= 100; i++) {
+    if (i > S.max) { cells.push(`<div class="lc lock"><b>${i}</b><span>🔒</span></div>`); continue; }
+    const s = ST[i] || 0;
+    cells.push(`<button class="lc${i === cur.n ? " cur" : ""}" data-r="${i}"><b>${i}</b><span><i>${"★".repeat(s)}</i>${"☆".repeat(3 - s)}</span></button>`);
+  }
+  modal(`<div class="mh"><div><h3>🗺️ Levels</h3><p>Total Stars: <b>${total} / 300 ⭐</b></p></div><button class="hb" data-x="1">✕</button></div><div class="lvw"><div class="lv">${cells.join("")}</div></div>`, []);
+  $("#mod").className = "mod map";
+  $("#mod").onclick = e => {
+    if (e.target.closest("[data-x]")) { sfx.click(); return closeModal(); }
+    const c = e.target.closest("[data-r]"); if (!c) return;
+    const n = +c.dataset.r; sfx.click(); closeModal(); if (n !== cur.n) start(n); // tap an unlocked room to (re)play it
+  };
+  const c = $("#mod .cur"); if (c) c.scrollIntoView({ block: "center" });
 }
 
 /* ---------- Monetization: rewarded ad hint ---------- */
@@ -307,8 +347,55 @@ async function showRewardedAdHint() {
        Remove the line below once a real ad SDK is wired in. */
     await Promise.resolve();
   } catch (err) { return msg("Ad not completed. Watch the full ad to unlock the hint."); }
+  run.hint++; // counts toward the star rating
   modal(`<h3>💡 Solution</h3><ol>${cur.st.map(s => `<li>${s}</li>`).join("")}</ol>`, [["Got it"]]);
 }
+/* ---------- Monetization: interstitial after Room 5 + rewarded skip ---------- */
+const AD_FREE_ROOMS = 5; // clearing Rooms 1-5 never shows an interstitial
+
+function nextRoom(cleared) {
+  const go = () => start(Math.min(100, cleared + 1));
+  if (cleared > AD_FREE_ROOMS) showInterstitialAd(go); // Room 6 onward
+  else go();
+}
+function showInterstitialAd(callback) {
+  /* ====== PASTE YOUR INTERSTITIAL AD SDK TRIGGER HERE ======
+     AdsGram:  const AdController = window.Adsgram.init({ blockId: "int-YOUR_BLOCK_ID" });
+               AdController.show().then(() => callback()).catch(() => callback()); // continue even if the ad fails
+               return;
+     Monetag:  show_YOUR_ZONE_ID().then(() => callback()).catch(() => callback());
+               return;
+     Delete the line below once a real ad SDK is wired in. */
+  callback(); // testing mode: skip straight to the next room
+}
+
+function confirmSkip() {
+  sfx.click();
+  const n = cur.n;
+  modal(`<h3>⏭️ Skip Room ${n}?</h3><p>Watch a short ad to skip Room ${n}?</p><p style="font-size:13px;color:var(--dm)">Skipping earns 1 ⭐ for this room.</p>`,
+    [["▶ Watch Ad", () => showRewardedAdSkip(skipRoom), 1], ["Cancel"]]);
+}
+function showRewardedAdSkip(callback) {
+  /* ====== PASTE YOUR REWARDED AD SDK TRIGGER HERE ======
+     AdsGram:  const AdController = window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" });
+               AdController.show().then(() => callback())
+                 .catch(() => msg("Ad not completed. Watch the full ad to skip the room."));
+               return;
+     Monetag:  show_YOUR_ZONE_ID().then(() => callback())
+                 .catch(() => msg("Ad not completed. Watch the full ad to skip the room."));
+               return;
+     Only call callback() after the ad is fully watched (the reward).
+     Delete the line below once a real ad SDK is wired in. */
+  callback(); // testing mode: grant the skip immediately
+}
+function skipRoom() {
+  const n = cur.n; run.skip = 1;
+  if (n >= 100) return win();                 // skipping the final room completes the game
+  finishRoom(n); sfx.win(); start(n + 1);     // 1 star saved, next room unlocked and saved
+  msg(`⏭️ Room ${n} skipped (1 ⭐). ${cur.intro}`);
+}
+$("#lv").addEventListener("click", openLevels);
+$("#skip").addEventListener("click", confirmSkip);
 $("#hint").addEventListener("click", showRewardedAdHint);
 $("#mute").addEventListener("click", () => { S.mute = S.mute ? 0 : 1; save(); render(); if (!S.mute) sfx.click(); });
 
