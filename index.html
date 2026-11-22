@@ -302,4 +302,17 @@ async function showRewardedAdHint() {
   try {
     /* ====== PASTE YOUR REWARDED-AD SDK TRIGGER HERE ======
        AdsGram:  const AdController = window.Adsgram.init({ blockId: "YOUR_BLOCK_ID" });
-                 await AdCon
+                 await AdController.show();          // resolves when the ad is watched, rejects if skipped
+       Monetag:  await show_YOUR_ZONE_ID();           // resolves after the rewarded ad completes
+       Remove the line below once a real ad SDK is wired in. */
+    await Promise.resolve();
+  } catch (err) { return msg("Ad not completed. Watch the full ad to unlock the hint."); }
+  modal(`<h3>💡 Solution</h3><ol>${cur.st.map(s => `<li>${s}</li>`).join("")}</ol>`, [["Got it"]]);
+}
+$("#hint").addEventListener("click", showRewardedAdHint);
+$("#mute").addEventListener("click", () => { S.mute = S.mute ? 0 : 1; save(); render(); if (!S.mute) sfx.click(); });
+
+start(S.room);
+</script>
+</body>
+</html>
